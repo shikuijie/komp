@@ -1,0 +1,36 @@
+@import (reference) "./color.less";
+@import (reference) "./size.less";
+
+@input-border-color: @border-light;
+@input-bg-disabled: @bg-light;
+@input-height: 38px;
+@input-border-radius: @border-radius;
+@input-padding: 0 10px;
+
+.km-input {
+  width: 100%;
+  height: @input-height;
+  line-height: @input-height;
+  padding: @input-padding;
+
+  border: 1px solid @input-border-color;
+  border-radius: @input-border-radius;
+  box-sizing: border-box;
+
+  background: #fff; 
+
+  &.km-focus:not([readonly]) {
+    border-color: @primary;
+  }
+
+  &.km-disabled {
+    background: @input-bg-disabled;
+  }
+
+  input {
+    width: 100%;
+    border: none;
+    outline: none;
+    color: inherit;
+  }
+}

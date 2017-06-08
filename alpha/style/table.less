@@ -1,0 +1,53 @@
+.af-table-box{
+  width:1200px;
+  overflow: auto;
+}
+.af-table{
+  text-align: center;
+  border: 1px solid #d5dadf;
+  width:100%;
+  overflow: hidden;
+  table-layout: fixed;
+}
+.af-table-head{
+  border-bottom:1px solid #d5dadf;
+  background: #fff;
+  tr{height:60px;}
+  td{
+    color: #d5dadf;
+    font-size: 13px;
+    font-weight:normal;
+    padding: 0 10px;
+    box-sizing: border-box;
+  }
+
+}
+.af-table-body{
+  font-size:14px;
+  color: #333;
+  .green{
+    color:@primary;
+  }
+  tr{
+    height:80px;
+    border-bottom:1px solid #eceff1;
+    &:nth-child(odd){
+      background: #fbfbfc;
+    }
+    &:nth-child(even){
+      background: #fff;
+    }
+    td{
+      vertical-align: middle;
+      &.left_text{
+        text-align: left;
+      }
+    }
+  }
+}
+.af-table-first{
+  position: absolute;
+  top:0;
+  left:0;
+  box-shadow: 5px 0px 5px #b7b7b7;
+}
