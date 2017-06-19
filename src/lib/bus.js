@@ -1,8 +1,4 @@
 export default class Bus {
-  constructor () {
-    this.$id = 0
-  }
-
   $emit (action) {
     if (!this[action]) {
       return
@@ -20,6 +16,7 @@ export default class Bus {
       this[action].push(fn)
     }
 
+    this.$id = this.$id || 0
     fn.$id = ++this.$id
     return fn.$id
   }

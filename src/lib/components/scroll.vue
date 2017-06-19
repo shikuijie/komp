@@ -1,13 +1,13 @@
 <template>
-  <div class="af-scroll km-clearfix">
-    <div class="af_scroll_body km-pull-left" ref="body" @wheel="wheel" :style="{top: -offset.Y + 'px', left: -offset.X + 'px'}">
+  <div class="km-scroll km-clearfix">
+    <div class="km_scroll_body km-pull-left" ref="body" @wheel="wheel" :style="{top: -offset.Y + 'px', left: -offset.X + 'px'}">
       <slot></slot>
     </div>
-    <div class="af_scroll_bar af_scroll_y" :class="{af_scroll_hidden: hidden, af_scroll_dragging: dragging.Y}" v-if="!noscroll.Y">
-      <div class="af_scroll_block" @mousedown.stop="startDrag('Y', $event.clientY)" :style="{height: blockSize.Y + 'px', top: (offset.Y / unit.Y) + 'px'}"></div>
+    <div class="km_scroll_bar km_scroll_y" :class="{km_scroll_hidden: hidden, km_scroll_dragging: dragging.Y}" v-if="!noscroll.Y">
+      <div class="km_scroll_block" @mousedown.stop="startDrag('Y', $event.clientY)" :style="{height: blockSize.Y + 'px', top: (offset.Y / unit.Y) + 'px'}"></div>
     </div>
-    <div class="af_scroll_bar af_scroll_x" :class="{af_scroll_hidden: hidden, af_scroll_dragging: dragging.X}" v-if="!noscroll.X">
-      <div class="af_scroll_block" @mousedown.stop="startDrag('X', $event.clientX)" :style="{width: blockSize.X + 'px', left: (offset.X / unit.X) + 'px'}"></div>
+    <div class="km_scroll_bar km_scroll_x" :class="{km_scroll_hidden: hidden, km_scroll_dragging: dragging.X}" v-if="!noscroll.X">
+      <div class="km_scroll_block" @mousedown.stop="startDrag('X', $event.clientX)" :style="{width: blockSize.X + 'px', left: (offset.X / unit.X) + 'px'}"></div>
     </div>
   </div>
 </template>
@@ -69,16 +69,16 @@
     },
     created () {
       this.mSpeed = 8
-      this.bus.$on('reset', dir => {
+      this.bus.$on('scroll.reset', (dir, init) => {
         if (!/[xXyY]/.test(dir)) {
           console.warn("Scroll's 'reset' event only take x|X|y|Y as the first argument")
           return
         }
-        this.reset(dir.toUpperCase())
+        this.reset(dir.toUpperCase(), init)
       })
-      this.bus.$on('scroll', (dir, size) => {
+      this.bus.$on('scroll.run', (dir, size) => {
         if (!/[xXyY]/.test(dir)) {
-          console.warn("Scroll's 'scroll' event only take x|X|y|Y as the first argument")
+          console.warn("Scroll's 'run' event only take x|X|y|Y as the first argument")
           return
         }
         this.scroll(dir.toUpperCase(), size)
@@ -88,12 +88,12 @@
       this.mElSize = {X: 0, Y: 0}
       this.mBodySize = {X: 0, Y: 0}
       this.mScrolling = {X: false, Y: false}
-      this.bus.$emit('reset', 'x')
-      this.bus.$emit('reset', 'y')
+      this.bus.$emit('scroll.reset', 'x')
+      this.bus.$emit('scroll.reset', 'y')
     },
     destroyed () {
-      this.bus.$off('reset')
-      this.bus.$off('scroll')
+      this.bus.$off('scroll.reset')
+      this.bus.$off('scroll.run')
     },
     methods: {
       startDrag (dir, pos) {
@@ -103,7 +103,7 @@
         Scroll.us = document.documentElement.style.userSelect
         document.documentElement.style.userSelect = 'none'
       },
-      reset (dir) {
+      reset (dir, init) {
         var prop = dir === 'X' ? 'width' : 'height'
         this.mElSize[dir] = this.$el.getBoundingClientRect()[prop]
         this.mBodySize[dir] = this.$refs.body.getBoundingClientRect()[prop]
@@ -116,17 +116,29 @@
           // scroll block 每滚动一个像素，scroll body 会滚动 unit 个像素
           this.unit[dir] = (this.mBodySize[dir] - this.mElSize[dir]) / (this.mElSize[dir] - this.blockSize[dir])
         }
-        this.offset[dir] = 0
+
+        if (init) {
+          this.offset[dir] = this.normalize(dir, init)
+        }
+        if (this.noscroll[dir]) {
+          this.offset[dir] = 0
+        } else {
+          let max = this.mBodySize[dir] - this.mElSize[dir]
+          if (this.offset[dir] > max) {
+            this.offset[dir] = max
+          }
+        }
       },
-      // 规范用户提供的 offset 值
-      // +123px 表示往下滚动 123 像素
-      // -123px 表示往上滚动 123 像素
-      //  123px 表示将 this.offset 设置为 123 像素
-      //  +100% 表示往下滚动一屏
-      //  -100% 表示往上滚动一屏
-      //   100% 表示将 this.offset 设置为整屏高度
+      /**
+       * 规范化用户提供的 offset 值
+       * +123px 表示往下滚动 123 像素
+       * -123px 表示往上滚动 123 像素
+       *  123px 表示将 this.offset 设置为 123 像素
+       *  +100% 表示往下滚动一屏
+       *  -100% 表示往上滚动一屏
+       *   100% 表示将 this.offset 设置为整屏高度
+       */
       normalize (dir, offset) {
-        offset += ''
         var re = /^([+-])?(\d+)(px|%)$/
         var match = offset.match(re)
         if (!match) {
@@ -175,6 +187,7 @@
           }
         })
       },
+      // 当只能左右滚动时，鼠标的滚轮可以控制左右滚动
       wheel ($event) {
         var dir = null
         if (!this.noscroll.Y) {
@@ -190,8 +203,9 @@
 
         var offset = this.offset[dir]
         if ($event.deltaY > 0) {
-          if (offset + this.mSpeed >= this.mBodySize[dir] - this.mElSize[dir]) {
-            offset = this.mBodySize[dir] - this.mElSize[dir]
+          let max = this.mBodySize[dir] - this.mElSize[dir]
+          if (offset + this.mSpeed >= max) {
+            offset = max
           } else {
             offset += this.mSpeed
           }
@@ -212,44 +226,48 @@
 <style lang="less">
   @import (reference) '../styles/color.less';
 
-  .af-scroll {
+  .km-scroll {
     position: relative;
     overflow: hidden;
 
-    .af_scroll_body {
+    .km_scroll_body {
       position: relative;
+      min-width: 100%;
+      min-height: 100%;
     }
 
-    .af_scroll_bar {
+    .km_scroll_bar {
       position: absolute;
       background: rgba(0,0,0,.1);
 
-      &.af_scroll_x {
+      &.km_scroll_x {
         left: 0;
         bottom: 0;
         height: 4px;
         width: 100%;
-        .af_scroll_block {
+
+        .km_scroll_block {
           height: 100%;
         }
       }
-      &.af_scroll_y {
+
+      &.km_scroll_y {
         right: 0;
         top: 0;
         width: 4px;
         height: 100%;
       }
 
-      &.af_scroll_hidden {
+      &.km_scroll_hidden {
         background: none;
 
-        .af_scroll_block {
+        .km_scroll_block {
           visibility: hidden;
           background: @primary;
         }
       }
 
-      .af_scroll_block {
+      .km_scroll_block {
         position: relative;
         border-radius: 3px;
         background: @primary;
@@ -259,8 +277,8 @@
       }
     }
 
-    &:hover .af_scroll_hidden .af_scroll_block,
-    .af_scroll_dragging.af_scroll_hidden .af_scroll_block {
+    &:hover .km_scroll_hidden .km_scroll_block,
+    .km_scroll_dragging.km_scroll_hidden .km_scroll_block {
       visibility: visible;
     }
   }

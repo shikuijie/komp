@@ -6,8 +6,16 @@
 </template>
 
 <script>
+import Bus from '../bus'
+
 export default {
   props: {
+    bus: {
+      type: Bus,
+      default () {
+        return new Bus()
+      }
+    },
     value: null,
     label: String,
     disabled: Boolean,
@@ -23,6 +31,14 @@ export default {
     isGroup () {
       return Array.isArray(this.value)
     }
+  },
+  created () {
+    this.bus.$on('toggle', () => {
+      this.toggle()
+    })
+  },
+  destroyed () {
+    this.bus.$off('toggle')
   },
   methods: {
     toggle () {

@@ -1,14 +1,17 @@
 <template>
-<li class="km-option" v-if="multiple" :level="level">
-  <km-checkbox v-model="selectValue" :onvalue="value" :label="label"></km-checkbox>
+<li class="km-option" v-if="multiple" :level="level" @click.stop="toggleSwitch">
+  <km-checkbox :bus="checkboxBus" v-model="selectValue" :onvalue="value"></km-checkbox>
+  <slot>{{label}}</slot>
 </li>
-<li class="km-option" @click.stop="select" :level="level" v-else>{{label}}</li>
+<li class="km-option" @click.stop="select" :level="level" v-else>
+  <slot>{{label}}</slot>
+</li>
 </template>
 
 <script>
 import Bus from '../../bus'
 export default {
-  name: 'km-option',
+  name: 'km-select-option',
   props: {
     label: {
       type: String,
@@ -28,10 +31,15 @@ export default {
     // 嵌套深度
     level: Number
   },
+  data () {
+    return {
+      checkboxBus: this.multiple ? new Bus() : null
+    }
+  },
   created () {
     this.selectOptions[this.value] = this.label
     if (!this.multiple && this.value === this.selectValue) {
-      this.selectBus.$emit('select', this.value)
+      this.selectBus.$emit('select.change', this.value)
     }
     if (this.groupOptions) {
       this.groupOptions[this.value] = this.label
@@ -40,9 +48,13 @@ export default {
   methods: {
     select () {
       // 通知 Dropdown 组件
-      this.selectBus.$emit('hide')
+      this.selectBus.$emit('dropdown.hide')
       // 通知 Select 组件
-      this.selectBus.$emit('select', this.value)
+      this.selectBus.$emit('select.change', this.value)
+    },
+    toggleSwitch () {
+      // 翻转 Checkbox 状态
+      this.checkboxBus.$emit('toggle')
     }
   },
   destroyed () {

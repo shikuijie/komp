@@ -1,4 +1,5 @@
 <script>
+import Vue from 'vue'
 import Bus from '../../bus'
 import {getProps} from '../../vnode'
 import Checkbox from '../checkbox.vue'
@@ -7,12 +8,8 @@ export default {
   components: {
     Checkbox
   },
-  name: 'km-optgroup',
   props: {
-    label: {
-      type: String,
-      required: true
-    },
+    label: String,
     multiple: Boolean,
     selectBus: Bus,
     selectOptions: Object,
@@ -23,26 +20,39 @@ export default {
   data () {
     return {
       options: this.multiple ? {} : undefined,
-      expanded: false
+      expanded: false,
+      checkboxBus: this.multiple ? new Bus() : null
+    }
+  },
+  methods: {
+    toggleOptions () {
+      this.expanded = !this.expanded
+      Vue.nextTick(() => this.selectBus.$emit('scroll.reset', 'y'))
     }
   },
   render (h) {
     var slots = this.$slots.default || []
+    // 显示组标签的slot
+    var labelSlot = null
+    if (slots[0] && slots[0].tag.indexOf('km-select-option') === -1) {
+      labelSlot = slots[0]
+      slots = slots.slice(1)
+    }
     slots.forEach(slot => {
-      if (slot.tag && slot.tag.indexOf('km-option') !== -1) {
-        let props = getProps(slot)
-        props.selectOptions = this.selectOptions
-        props.selectValue = this.selectValue
-        props.multiple = this.multiple
-        props.level = this.level + 1
+      let props = getProps(slot)
+      props.selectOptions = this.selectOptions
+      props.selectValue = this.selectValue
+      props.multiple = this.multiple
+      props.level = this.level + 1
 
-        if (this.multiple) {
-          props.groupOptions = this.options
-        } else {
-          props.selectBus = this.selectBus
-        }
+      if (this.multiple) {
+        props.groupOptions = this.options
+      } else {
+        props.selectBus = this.selectBus
       }
     })
+
+    var optionKeys = this.options && Object.keys(this.options)
 
     return h('ul', {
       staticClass: 'km-optgroup',
@@ -58,12 +68,23 @@ export default {
         staticClass: 'km_optgroup_name',
         attrs: {
           level: this.level
+        },
+        on: {
+          click: event => {
+            event.stopPropagation()
+            // 单选下拉框，通过单击组标签也可以收起或展开其子选项
+            if (this.multiple) {
+              this.checkboxBus.$emit('toggle')
+            } else if (this.selectExpand) {
+              this.toggleOptions()
+            }
+          }
         }
       }, [
         this.multiple && h(Checkbox, {
           props: {
-            label: this.label,
-            value: Object.keys(this.options).every(val => this.selectValue.indexOf(val) !== -1)
+            bus: this.checkboxBus,
+            value: optionKeys.length && optionKeys.every(val => this.selectValue.indexOf(val) !== -1)
           },
           on: {
             change: val => {
@@ -83,7 +104,8 @@ export default {
               }
             }
           }
-        }) || this.label,
+        }) || '',
+        labelSlot || this.label,
         // 收起和展开选项图标
         this.selectExpand && h('div', {
           staticClass: 'km_optgroup_icon km-cursor'
@@ -93,7 +115,7 @@ export default {
             on: {
               click: $event => {
                 $event.stopPropagation()
-                this.expanded = !this.expanded
+                this.toggleOptions()
               }
             }
           })

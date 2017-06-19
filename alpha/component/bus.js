@@ -17,8 +17,8 @@ Bus.prototype.$on = function (action, fn) {
   this[action] = this[action] || []
   this[action].push(fn)
 
-  fn.__afId = ++this.__afId
-  return fn.__afId
+  fn.mId = ++this.mFnId
+  return fn.mId
 }
 
 Bus.prototype.$off = function (action, fnId) {
@@ -29,7 +29,7 @@ Bus.prototype.$off = function (action, fnId) {
 
   var idx = -1
   for (let i = 0; i < this[action].length; i++) {
-    if (this[action][i].__afId === fnId) {
+    if (this[action][i].mId === fnId) {
       idx = i
       break
     }
@@ -40,8 +40,7 @@ Bus.prototype.$off = function (action, fnId) {
   }
 }
 
-var CURRENT_ID = 0
 function Bus () {
-  this.__afId = ++CURRENT_ID
+  this.mFnId = 0
 }
 export default Bus

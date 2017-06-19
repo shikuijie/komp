@@ -1,5 +1,5 @@
-@import (reference) "./color.less";
-@import (reference) "./size.less";
+@import (reference) "../styles/color.less";
+@import (reference) "../styles/size.less";
 
 @input-border-color: @border-light;
 @input-bg-disabled: @bg-light;
@@ -8,7 +8,7 @@
 @input-padding: 0 10px;
 
 .km-input {
-  width: 100%;
+  display: inline-block;
   height: @input-height;
   line-height: @input-height;
   padding: @input-padding;
@@ -24,7 +24,7 @@
   }
 
   &.km-disabled {
-    background: @input-bg-disabled;
+    cursor: not-allowed;
   }
 
   input {

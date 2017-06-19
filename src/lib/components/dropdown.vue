@@ -1,17 +1,24 @@
 <template>
 <div class="km-dropdown" :class="{km_dropdown_visible: visible}">
   <div class="km-input" @click.stop="toggle" :class="{'km-disabled': disabled, 'km-focus': visible}">
-    <input type="text" :readonly="readonly" :placeholder="placeholder" :disabled="disabled" :value="text"/>
+    <!-- 显示一个标签 -->
+    <input type="text" :readonly="readonly" 
+          :placeholder="placeholder"
+          v-model="text"/>
+    <!-- 显示多个标签 -->
     <ul class="km_dropdown_labels" v-if="labels">
       <li v-for="label in labels">{{label}} <i class="km-cursor icon-close-small" @click.stop="clear(label)"></i></li>
     </ul>
+    <!-- 箭头指示图标和清除图标 -->
     <div class="km_dropdown_icon">
       <i class="icon-close km-cursor" v-if="removable" @click.stop="clear()"></i>
       <i :class="`icon-arrow-${this.visible ? 'up' : 'down'}`" class="km-cursor" v-else></i>
     </div>
   </div>
+  <!-- 下拉框内容区域 -->
   <div class="km-dropdown-frame" ref="body" :style="bodyPosition">
-    <slot></slot>
+    <div v-if="loading" class="km_dropdown_load">加载中，请稍候</div>
+    <slot v-else></slot>
   </div>
 </div>
 </template>
@@ -23,17 +30,21 @@ import {isServer} from '../util'
 const Dropdown = {current: null}
 if (!isServer()) {
   document.documentElement.addEventListener('click', () => {
-    Dropdown.current && Dropdown.current.$emit('hide')
+    Dropdown.current && Dropdown.current.$emit('dropdown.hide')
   })
 }
 
 export default {
   created () {
     // 打开下拉框
-    this.bus.$on('show', () => {
-      // 打开之前关闭页面上的其他下拉框
+    this.bus.$on('dropdown.show', () => {
+      if (this.disabled) {
+        return
+      }
+
+      // 打开之前，关闭页面上的其他下拉框
       if (Dropdown.current && Dropdown.current !== this.bus) {
-        Dropdown.current.$emit('hide')
+        Dropdown.current.$emit('dropdown.hide')
       }
       Dropdown.current = this.bus
 
@@ -48,28 +59,34 @@ export default {
         this.bodyPosition.left = 'auto'
       }
       this.visible = true
-      this.$emit('show')
+      // 父组件发送 show 事件
+      this.$parent.$emit('show')
     })
+
     // 收起下拉框
-    this.bus.$on('hide', () => {
+    this.bus.$on('dropdown.hide', () => {
       Dropdown.current = null
 
       this.visible = false
-      this.$emit('hide')
+      // 父组件发送 hide 事件
+      this.$parent.$emit('hide')
     })
   },
   destroyed () {
-    this.bus.$off('show')
-    this.bus.$off('hide')
+    this.bus.$off('dropdown.show')
+    this.bus.$off('dropdown.hide')
   },
   props: [
     'bus', // 和父组件通信
     'readonly', // 文本框是否是只读的
     'disabled', // 文本框是否已经非能了
     'clearable', // 文本框是否可以清空
+    'eventToClear', // 是否发送事件来清空
     'placeholder', // 文本框占位字符串
-    'text', // 文本框的显示文本
-    'labels' // 文本框显示的多个标签文本
+    // labels 和 label 不能同时存在
+    'labels', // 多选下拉框的选中标签
+    'label', // 其他文本框的显示文本
+    'loading' // 下拉框中的内容正在加载
   ],
   data () {
     return {
@@ -82,18 +99,32 @@ export default {
   },
   computed: {
     removable () {
-      if (this.disabled || !this.clearable) {
+      if (this.disabled || this.loading || !this.clearable) {
         return false
       }
-      return this.labels ? !!this.labels.length : !!this.text
+      return this.labels ? !!this.labels.length : !!this.label
+    },
+    text: {
+      get () {
+        return this.label
+      },
+      set (val) {
+        this.bus.$emit('dropdown.change', val)
+      }
     }
   },
   methods: {
     toggle () {
-      this.bus.$emit(this.visible ? 'hide' : 'show')
+      this.bus.$emit(this.visible ? 'dropdown.hide' : 'dropdown.show')
     },
     clear (label) {
-      this.bus.$emit('clear', label)
+      if (!this.eventToClear) {
+        // 非多选下拉框直接清空父组件中的 value 值
+        this.$parent.$emit('input', null)
+      } else {
+        // 多选下拉框则通知父组件自己处理
+        this.bus.$emit('dropdown.clear', label)
+      }
     }
   }
 }
@@ -118,6 +149,7 @@ export default {
   }
 
   .km-input {
+    width: 100%;
     padding-right: @dropdown-padding-right;
     background: white;
   }
@@ -172,6 +204,12 @@ export default {
     border-radius: @dropdown-border-radius;
     background: white;
     z-index: @zindex-dropdown;
+
+    .km_dropdown_load {
+      height: 100px;
+      line-height: 100px;
+      text-align: center;
+    }
   }
 }
 </style>

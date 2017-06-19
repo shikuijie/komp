@@ -1,61 +1,57 @@
+<style>
+.km-select .km-scroll {
+  max-height: 200px;
+}
+</style>
+
 <template>
   <div id="app">
-    <km-select :bus="bus1" :expandable="true" :multiple="true" :clearable="true" v-model="select1" style="width: 320px">
-      <km-optgroup label="组1">
-        <km-option label="Label1" value="Value1"></km-option>
-        <km-option label="Label2" value="Value2"></km-option>
-      </km-optgroup>
-      <km-optgroup label="组2">
-        <km-option label="Label3" value="Value3"></km-option>
-        <km-option label="Label4" value="Value4"></km-option>
-      </km-optgroup>
-    </km-select>
-    <km-select :bus="bus" :clearable="true" :expandable="true" v-model="select">
-      <km-optgroup label="组1">
-        <km-option label="Label1" value="Value1"></km-option>
-        <km-option label="Label2" value="Value2"></km-option>
-      </km-optgroup>
-      <km-optgroup label="组2">
-        <km-option label="Label3" value="Value3"></km-option>
-        <km-option label="Label4" value="Value4"></km-option>
-      </km-optgroup>
-    </km-select>
-    <button @click.stop="bus.$emit('hide')">Toggle</button>
-    <km-scroll :bus="scrollBus" :hidden="false" style="max-width: 200px;max-height: 280px">
-      <div style="width: 320px">
-        <div v-show="visible">
-          <div>我饿if顺利的会计法沙拉酱豆腐沃尔夫老师发的就是fd1</div>
-          <div>我饿if顺利的会计法沙拉酱豆腐沃尔夫老师发的就是fd2</div>
-          <div>我饿if顺利的会计法沙拉酱豆腐沃尔夫老师发的就是fd3</div>
-          <div>我饿if顺利的会计法沙拉酱豆腐沃尔夫老师发的就是fd4</div>
-          <div>我饿if顺利的会计法沙拉酱豆腐沃尔夫老师发的就是fd5</div>
-          <div>我饿if顺利的会计法沙拉酱豆腐沃尔夫老师发的就是fd6</div>
-          <div>我饿if顺利的会计法沙拉酱豆腐沃尔夫老师发的就是fd7</div>
-          <div>我饿if顺利的会计法沙拉酱豆腐沃尔夫老师发的就是fd8</div>
-          <div>我饿if顺利的会计法沙拉酱豆腐沃尔夫老师发的就是fd9</div>
-          <div>我饿if顺利的会计法沙拉酱豆腐沃尔夫老师发的就是fd10</div>
-          <div>我饿if顺利的会计法沙拉酱豆腐沃尔夫老师发的就是fd11</div>
-          <div>我饿if顺利的会计法沙拉酱豆腐沃尔夫老师发的就是fd12</div>
-          <div>我饿if顺利的会计法沙拉酱豆腐沃尔夫老师发的就是fd13</div>
-          <div>我饿if顺利的会计法沙拉酱豆腐沃尔夫老师发的就是fd14</div>
-          <div>我饿if顺利的会计法沙拉酱豆腐沃尔夫老师发的就是fd15</div>
-          <div>我饿if顺利的会计法沙拉酱豆腐沃尔夫老师发的就是fd16</div>
-          <div>我饿if顺利的会计法沙拉酱豆腐沃尔夫老师发的就是fd17</div>
-          <div>我饿if顺利的会计法沙拉酱豆腐沃尔夫老师发的就是fd18</div>
-        </div>
-        <div>我饿if顺利的会计法沙拉酱豆腐沃尔夫老师发的就是fd19</div>
-        <div>我饿if顺利的会计法沙拉酱豆腐沃尔夫老师发的就是fd20</div>
-        <div>我饿if顺利的会计法沙拉酱豆腐沃尔夫老师发的就是fd21</div>
-        <div>我饿if顺利的会计法沙拉酱豆腐沃尔夫老师发的就是fd22</div>
-        <div>我饿if顺利的会计法沙拉酱豆腐沃尔夫老师发的就是fd23</div>
-        <div>我饿if顺利的会计法沙拉酱豆腐沃尔夫老师发的就是fd24</div>
-        <div>我饿if顺利的会计法沙拉酱豆腐沃尔夫老师发的就是fd25</div>
-        <div>我饿if顺利的会计法沙拉酱豆腐沃尔夫老师发的就是fd26</div>
-      </div>
-    </km-scroll>
-    <button @click.stop="scroll('-100%')">上翻</button>
-    <button @click.stop="scroll('+100%')">下翻</button>
-    <button @click.stop="toggle">翻转</button>
+    <km-form class="km-inline" :bus="person.bus" @submit="onSubmitPersonInfo">
+      <km-form-control name="edu">
+        <km-select :clearable="true" v-model="person.info.edu" :expandable="true" :multiple="true">
+          <km-optgroup>
+            <div>自定义组</div>
+            <km-option label="Label1" value="Value1"><div>自定义标签</div></km-option>
+            <km-option label="Label2" value="Value2"></km-option>
+          </km-optgroup>
+          <km-optgroup label="组2">
+            <km-option label="Label3" value="Value3"></km-option>
+            <km-option label="Label4" value="Value4"></km-option>
+          </km-optgroup >
+          <km-optgroup label="组3">
+            <km-option label="Label5" value="Value5"></km-option>
+            <km-option label="Label6" value="Value6"></km-option>
+          </km-optgroup>
+        </km-select>
+      </km-form-control>
+      <km-form-control name="age" :number="true" @check="onCheckPersonAge">
+        <km-input v-model="person.info.age"></km-input>
+      </km-form-control>
+      <km-form-control name="birthday" @check="onCheckPersonBirthday">
+        <km-datepicker :hastime="true" v-model="person.info.birthday"></km-datepicker>
+      </km-form-control>
+      <km-form-action>
+        <button type="submit">提交</button>
+      </km-form-action>
+    </km-form>
+
+    <km-tip-head tag="button" trigger="hover" :bus="tip.bus" position="bottom" :eid="tip.eid" :edata="tip.edata">TIP</km-tip-head>
+    <km-tip-head :bus="tip.bus" position="right" :eid="tip.eid1" :edata="tip.edata">TIP</km-tip-head>
+    <km-tip-body :bus="tip.bus">
+      <template scope="{eid, edata}">
+        <div>{{eid.name}}</div>
+        <div>{{edata.name}}</div>
+      </template>
+    </km-tip-body>
+
+    <km-table :table="table" :rowspan="true">
+      <km-tcell head="个人信息">
+        <km-tcell head="姓名" body="person.name"></km-tcell>
+        <km-tcell head="职业" body="person.job[]"></km-tcell>
+      </km-tcell>
+      <km-tcell head="年龄" body="person.age" v-if="table.showAge"></km-tcell>
+    </km-table>
+    <button @click.stop="changeTable">改变表格</button>
   </div>
 </template>
 
@@ -66,25 +62,67 @@ import {Bus} from 'komp'
 export default {
   data () {
     return {
-      select: 'Value1',
-      bus: new Bus(),
-      select1: ['Value1', 'Value2', 'Value3', 'Value4'],
-      bus1: new Bus(),
-      scrollBus: new Bus(),
-      visible: true
+      person: {
+        bus: new Bus(),
+        edu: null,
+        info: {
+          edu: [],
+          age: null,
+          birthday: null
+        }
+      },
+      tip: {
+        bus: new Bus(),
+        eid1: {name: 'shimoo'},
+        eid: {name: 'SHIMOO'},
+        edata: {name: 'SHIKUIJIE'}
+      },
+      table: {
+        showAge: true,
+        tbody: [{
+          person: {
+            name: 'shikuijie',
+            age: 32,
+            job: ['Web Programmer', 'Data Engineer']
+          }
+        }, {
+          person: {
+            name: 'lagou',
+            age: 4,
+            job: ['Internet Job', 'Freelancer Platform']
+          }
+        }]
+      }
     }
   },
   methods: {
-    scroll (size) {
-      this.scrollBus.$emit('scroll', 'y', size)
+    onChangeSelect (val) {
     },
-    toggle () {
-      this.visible = !this.visible
-      Vue.nextTick(() => {
-        this.scrollBus.$emit('reset', 'y')
-      })
+    onChangeSuggest (val) {
+      console.log(val)
+    },
+    onCheckPersonAge ({value, resolve}) {
+      window.setTimeout(() => {
+        console.log('check age')
+        resolve()
+      }, 1000)
+    },
+    onCheckPersonBirthday ({value, resolve}) {
+      window.setTimeout(() => {
+        console.log('check birthday')
+        resolve()
+      }, 500)
+    },
+    onSubmitPersonInfo (resolve) {
+      console.log('start submit person info')
+      window.setTimeout(() => {
+        console.log('submit person info stop')
+        resolve()
+      }, 2000)
+    },
+    changeTable () {
+      this.table.showAge = !this.table.showAge
     }
   }
 }
 </script>
-

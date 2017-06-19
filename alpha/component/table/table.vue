@@ -328,7 +328,7 @@
     }
   }
 
-  // 每次columns改变重新染师时清理rowspan和colspan属性
+  // 每次columns改变重新渲染时清理rowspan和colspan属性
   function clearSpan (rows) {
     rows.forEach(row => {
       row.forEach(node => {
