@@ -1,0 +1,22 @@
+@import (reference) "./color.less";
+@import (reference) "./size.less";
+
+@btn-height: 38px;
+@btn-border-color: @border-light;
+@btn-disabled-color: @bg-light;
+
+.km-btn {
+  display: inline-block;
+  height: 38px;
+  line-height: 38px;
+  padding: 0 24px;
+  background: white;
+  color: @dark;
+  border: 1px solid @btn-border-color;
+  outline: none;
+
+  &.km-disabled {
+    background: @btn-disabled-color;
+    cursor: not-allowed;
+  }
+}
