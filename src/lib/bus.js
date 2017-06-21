@@ -6,7 +6,7 @@ export default class Bus {
 
     var args = [].slice.call(arguments, 1)
     var results = this[action].map(fn => fn.apply(this, args))
-    return results.length > 1 && results || results[0]
+    return results.length > 1 ? results : results[0]
   }
 
   $on (action, fn) {
@@ -27,7 +27,7 @@ export default class Bus {
     }
 
     if (id) {
-      this[action] = this[action].filter(fn => fn.$id === id)
+      this[action] = this[action].filter(fn => fn.$id !== id)
     } else {
       this[action] = null
     }

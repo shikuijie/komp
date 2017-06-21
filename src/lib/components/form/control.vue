@@ -39,8 +39,8 @@ export default {
     }
   },
   created () {
-    this.bus.$on('control.check', () => {
-      var val = this.bus.$emit('control.getvalue')
+    this.bus.$on('control.check', val => {
+      val = val || this.bus.$emit('control.getvalue')
       return this.check(val)
     })
 
@@ -50,7 +50,7 @@ export default {
 
     if (this.formBus) {
       this.mFormCheckId = this.formBus.$on('form.inner.check', () => this.bus.$emit('control.check'))
-      this.mFormClearID = this.formBus.$on('form.inner.clear', () => this.bus.$emit('control.clear'))
+      this.mFormClearId = this.formBus.$on('form.inner.clear', () => this.bus.$emit('control.clear'))
     }
   },
   mounted () {
@@ -87,23 +87,28 @@ export default {
         }
       }).then(err => {
         this.error = err || null
+        return err
       })
     },
     requiredCheck (val) {
       var msg = this.required === true ? '必填项' : this.required
-      return (val || val === 0) ? null : msg
+      if (Array.isArray(val)) {
+        return val.length ? null : msg
+      } else {
+        return (val || val === 0) ? null : msg
+      }
     },
     numberCheck (val) {
       var msg = this.number === true ? '请输入数字' : this.number
-      return !val || Type.isNumber(val)? null : msg
+      return (!val || Type.isNumber(val)) ? null : msg
     },
     minCheck (val) {
       var [min, msg] = Array.isArray(this.min) ? this.min : [this.min, '输入过小']
-      return (!val && val !== 0) || min <= val ? null : msg
+      return ((!val && val !== 0) || min <= val) ? null : msg
     },
     maxCheck (val) {
       var [max, msg] = Array.isArray(this.max) ? this.max : [this.max, '输入过大']
-      return (!val && val !== 0) || max >= val ? null : msg
+      return ((!val && val !== 0) || max >= val) ? null : msg
     },
     maxlengthCheck (val) {
       val += ''
@@ -113,21 +118,21 @@ export default {
     emailCheck (val) {
       var re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
       var msg = this.email === true ? '邮箱格式不对' : this.email
-      return !val || re.test(val) ? null : msg
+      return (!val || re.test(val)) ? null : msg
     },
     phoneCheck (val) {
       var re = /^(?:1(3|4|5|7|8)\d{9})|(?:\(\d{3,4}\)|\d{3,4}-|\s)\d{7,14}$/
       var msg = this.phone === true ? '电话格式不对' : this.phone
-      return !val || re.test(val) ? null : msg
+      return (!val || re.test(val)) ? null : msg
     },
     urlCheck (val) {
       var re = /^(?:https?:\/\/(?:www\.|(?!www))[^\s.]+\.[^\s]{2,}|www\.[^\s]+\.[^\s]{2,})$/
       var msg = this.url === true ? '网址格式不对' : this.url
-      return !val || re.test(val) ? null : msg
+      return (!val || re.test(val)) ? null : msg
     },
     patternCheck (val) {
       var [re, msg] = Array.isArray(this.pattern) ? this.pattern : [this.pattern, '模式不匹配']
-      return !val || re.test(val) ? null : msg
+      return (!val || re.test(val)) ? null : msg
     }
   },
   render (h) {
@@ -162,6 +167,12 @@ export default {
     display: inline-block;
   }
 
+  .km-dropdown {
+    width: 100%;
+    .km-input {
+      width: 100%;
+    }
+  }
   .km-input {
     width: 100%;
   }

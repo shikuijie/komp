@@ -1,7 +1,7 @@
 <template>
 <Dropdown class="km-datime" :class="{km_date_time: hastime}"
-          :bus="bus" :readonly="true" :label="fullStr"
-          :placeholder="placeholder" :clearable="clearable" :disabled="disabled">
+          :bus="bus" :readonly="true" :placeholder="placeholder" 
+          :clearable="clearable" :disabled="disabled">
   <div class="km-clearfix km_datime_frame" @click.stop>
     <div class="km_date km-pull-left">
       <!-- 当前年月及其调整按钮 -->
@@ -53,8 +53,6 @@
 import Dropdown from './dropdown.vue'
 import Scroll from './scroll.vue'
 import Bus from '../bus'
-import {Type} from '../util'
-
 export default {
   components: {
     Dropdown,
@@ -102,11 +100,11 @@ export default {
   },
   mounted () {
     var start = 7
-    var step = 30
     var offset = 0
     if (this.hastime && this.currentDate.hh && this.currentDate.mm) {
       offset = (this.currentDate.hh - start) * 2
     }
+    this.bus.$emit('dropdown.change', this.fullStr)
     this.bus.$emit('scroll.reset', 'y', (offset || 4) * 30 + 'px')
   },
   computed: {
@@ -155,9 +153,8 @@ export default {
     }
   },
   watch: {
-    value (val) {
-      this.$emit('change', val)
-      this.controlBus && this.controlBus.$emit('control.check')
+    value (val, oval) {
+      this.bus.$emit('dropdown.change', this.fullStr)
     }
   },
   methods: {
@@ -174,10 +171,12 @@ export default {
       this.bus.$emit('dropdown.hide')
 
       var [hh, mi] = t.split(':').map(v => +v)
-      var {yyyy, mm, dd} = this.valueObj && this.valueObj || this.today
+      var {yyyy, mm, dd} = this.valueObj ? this.valueObj : this.today
 
       var nval = formatDate({yyyy, mm, dd, hh, mi}, true)
       this.$emit('input', nval)
+      this.$emit('change', nval)
+      this.controlBus && this.controlBus.$emit('control.check', nval)
     },
     selectDate (day) {
       if (!day) {
@@ -187,8 +186,8 @@ export default {
         this.bus.$emit('dropdown.hide')
       }
 
-      var hour = this.valueObj && this.valueObj.hh || 0
-      var minute = this.valueObj && this.valueObj.mm || 0
+      var hour = this.valueObj ? this.valueObj.hh : 0
+      var minute = this.valueObj ? this.valueObj.mm : 0
       var target = Object.assign({}, this.currentDate)
       target.dd = day
       target.hh = hour
@@ -196,6 +195,8 @@ export default {
 
       var nval = formatDate(target, this.hastime)
       this.$emit('input', nval)
+      this.$emit('change', nval)
+      this.controlBus && this.controlBus.$emit('control.check', nval)
     },
     prevYear () {
       this.currentDate.yyyy--
@@ -209,7 +210,7 @@ export default {
         month = 12
         year--
       }
-      
+
       this.currentDate.mm = month
       this.currentDate.yyyy = year
     },
@@ -263,7 +264,7 @@ function parseDate (value) {
 
 function formatDate (date, hastime) {
   var dateStr = `${date.yyyy}-${normalize(date.mm)}-${normalize(date.dd)}`
-  var timeStr = hastime && ` ${normalize(date.hh)}:${normalize(date.mi)}` || ''
+  var timeStr = hastime ? ` ${normalize(date.hh)}:${normalize(date.mi)}` : ''
   return dateStr + timeStr
 }
 

@@ -81,7 +81,7 @@ export default {
           }
         }
       }, [
-        this.multiple && h(Checkbox, {
+        this.multiple ? h(Checkbox, {
           props: {
             bus: this.checkboxBus,
             value: optionKeys.length && optionKeys.every(val => this.selectValue.indexOf(val) !== -1)
@@ -104,10 +104,10 @@ export default {
               }
             }
           }
-        }) || '',
+        }) : '',
         labelSlot || this.label,
         // 收起和展开选项图标
-        this.selectExpand && h('div', {
+        this.selectExpand ? h('div', {
           staticClass: 'km_optgroup_icon km-cursor'
         }, [
           h('i', {
@@ -119,7 +119,7 @@ export default {
               }
             }
           })
-        ]) || ''
+        ]) : ''
       ]),
       // 本组所有选项
       ...slots

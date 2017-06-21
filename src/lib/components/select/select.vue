@@ -39,13 +39,13 @@ export default {
         if (val !== oval) {
           throw new Error('Model change is forbidden for multiple select component!')
         }
+        this.bus.$emit('dropdown.change', val.map(v => this.options[v]), true)
       } else {
         if (val && !this.options[val]) {
           throw new Error('Model value of Select must be among values of Options')
         }
+        this.bus.$emit('dropdown.change', this.options[val])
       }
-      this.$emit('change', val)
-      this.controlBus && this.controlBus.$emit('control.check')
     }
   },
   created () {
@@ -57,6 +57,8 @@ export default {
     if (!this.multiple) {
       this.bus.$on('select.change', val => {
         this.$emit('input', val)
+        this.$emit('change', val)
+        this.controlBus && this.controlBus.$emit('control.check', val)
       })
     }
 
@@ -77,6 +79,13 @@ export default {
 
     if (this.controlBus) {
       this.controlBus.$on('control.getvalue', () => this.value)
+    }
+  },
+  mounted () {
+    if (this.multiple) {
+      this.bus.$emit('dropdown.change', this.value.map(v => this.options[v]), true)
+    } else {
+      this.bus.$emit('dropdown.change', this.value ? this.options[this.value] : null)
     }
   },
   destroyed () {
@@ -115,22 +124,17 @@ export default {
         clearable: this.clearable,
         eventToClear: this.multiple,
         placeholder: this.placeholder,
-        label: this.multiple ? null : this.options[this.value],
-        labels: this.multiple ? this.value.reduce((res, val) => {
-          this.options[val] && res.push(this.options[val])
-          return res
-        }, []) : null,
         loading: !slots.length
       }
     }, [
-      slots.length && h(Scroll, {
+      slots.length ? h(Scroll, {
         props: {
           hidden: true,
           bus: this.bus
         }
       }, [
         h('ul', slots)
-      ]) || ''
+      ]) : ''
     ])
   }
 }

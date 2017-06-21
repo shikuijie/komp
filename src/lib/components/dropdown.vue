@@ -3,7 +3,7 @@
   <div class="km-input" @click.stop="toggle" :class="{'km-disabled': disabled, 'km-focus': visible}">
     <!-- 显示一个标签 -->
     <input type="text" :readonly="readonly" 
-          :placeholder="placeholder"
+          :placeholder="labels && labels.length ? null : placeholder"
           v-model="text"/>
     <!-- 显示多个标签 -->
     <ul class="km_dropdown_labels" v-if="labels">
@@ -36,6 +36,13 @@ if (!isServer()) {
 
 export default {
   created () {
+    this.bus.$on('dropdown.change', (label, multiple) => {
+      if (!multiple) {
+        this.text = label
+      } else if (Array.isArray(label)) {
+        this.labels = label
+      }
+    })
     // 打开下拉框
     this.bus.$on('dropdown.show', () => {
       if (this.disabled) {
@@ -73,6 +80,7 @@ export default {
     })
   },
   destroyed () {
+    this.bus.$off('dropdown.change')
     this.bus.$off('dropdown.show')
     this.bus.$off('dropdown.hide')
   },
@@ -83,9 +91,6 @@ export default {
     'clearable', // 文本框是否可以清空
     'eventToClear', // 是否发送事件来清空
     'placeholder', // 文本框占位字符串
-    // labels 和 label 不能同时存在
-    'labels', // 多选下拉框的选中标签
-    'label', // 其他文本框的显示文本
     'loading' // 下拉框中的内容正在加载
   ],
   data () {
@@ -94,7 +99,9 @@ export default {
       bodyPosition: {
         left: 0,
         right: 'auto'
-      }
+      },
+      text: null,
+      labels: null
     }
   },
   computed: {
@@ -103,14 +110,6 @@ export default {
         return false
       }
       return this.labels ? !!this.labels.length : !!this.label
-    },
-    text: {
-      get () {
-        return this.label
-      },
-      set (val) {
-        this.bus.$emit('dropdown.change', val)
-      }
     }
   },
   methods: {

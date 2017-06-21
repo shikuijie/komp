@@ -11,7 +11,7 @@
 <script>
 import Vue from 'vue'
 import Bus from '../../bus'
-import {Type, isServer} from '../../util'
+import {isServer} from '../../util'
 
 const Tip = {bus: null, eid: null}
 if (!isServer()) {
@@ -178,62 +178,62 @@ export default {
 </script>
 
 <style lang="less">
-  @import (reference) '../../styles/color.less';
-  @import (reference) '../../styles/size.less';
+@import (reference) '../../styles/color.less';
 
-  .km-tip-body {
+@zindex-tip: 3000;
+.km-tip-body {
+  position: absolute;
+  border: 1px solid @border-light;
+  border-radius: 2px;
+  background: white;
+  box-shadow: 0 2px 3px rgba(0,0,0,.08);
+
+  visibility: hidden;
+  z-index: -1;
+  opacity: 0;
+
+  &.km_tip_visible {
+    opacity: 1;
+    visibility: visible;
+    z-index: @zindex-tip;
+  }
+
+  .km_tip_triangle {
     position: absolute;
-    border: 1px solid @border-light;
-    border-radius: 2px;
-    background: white;
-    box-shadow: 0 2px 3px rgba(0,0,0,.08);
+    left: 0;
+    top: 0;
+    width: 14.2px;
+    height: 7.1px;
+    overflow: hidden;
 
-    visibility: hidden;
-    z-index: -1;
-    opacity: 0;
-
-    &.km_tip_visible {
-      opacity: 1;
-      visibility: visible;
-      z-index: @zindex-tip;
+    &.km_tip_left,
+    &.km_tip_right {
+      width: 7.1px;
+      height: 14.2px;
     }
 
-    .km_tip_triangle {
-      position: absolute;
-      left: 0;
-      top: 0;
-      width: 14.2px;
-      height: 7.1px;
-      overflow: hidden;
-
-      &.km_tip_left,
-      &.km_tip_right {
-        width: 7.1px;
-        height: 14.2px;
-      }
-
-      .km_tip_square {
-        position: relative;
-        left: 2px;
-        top: 2px;
-        width: 10px;
-        height: 10px;
-        border: 1px solid @border-light;
-        background: white;
-        transform: rotateZ(45deg);
-      }
-      &.km_tip_top .km_tip_square {
-        left: 2px;
-        top: -5px;
-      }
-      &.km_tip_left .km_tip_square {
-        left: -5px;
-        top: 2px;
-      }
-      &.km_tip_right .km_tip_square {
-        left: 2px;
-        top: 2px;
-      }
+    .km_tip_square {
+      position: relative;
+      left: 2px;
+      top: 2px;
+      width: 10px;
+      height: 10px;
+      border: 1px solid @border-light;
+      background: white;
+      transform: rotateZ(45deg);
+    }
+    &.km_tip_top .km_tip_square {
+      left: 2px;
+      top: -5px;
+    }
+    &.km_tip_left .km_tip_square {
+      left: -5px;
+      top: 2px;
+    }
+    &.km_tip_right .km_tip_square {
+      left: 2px;
+      top: 2px;
     }
   }
+}
 </style>

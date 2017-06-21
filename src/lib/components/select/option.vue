@@ -38,9 +38,6 @@ export default {
   },
   created () {
     this.selectOptions[this.value] = this.label
-    if (!this.multiple && this.value === this.selectValue) {
-      this.selectBus.$emit('select.change', this.value)
-    }
     if (this.groupOptions) {
       this.groupOptions[this.value] = this.label
     }

@@ -1,1 +1,1 @@
-import './src/lib'
+export * from './src/lib'

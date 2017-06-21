@@ -13,7 +13,7 @@ export default {
       },
       tfoot: Object
     },
-    rowspan: Boolean,
+    rowspan: Boolean
   },
   methods: {
     wrappers () {
@@ -31,17 +31,17 @@ export default {
   },
   render (h) {
     var wrappers = this.wrappers()
-    var columns = wrappers && wrappers[wrappers.length - 1].map(wrapper => wrapper.node) || []
-    var bodyKeys = this.rowspan && columns.map(s => getProps(s).body) || null
+    var columns = wrappers ? wrappers[wrappers.length - 1].map(wrapper => wrapper.node) : []
+    var bodyKeys = this.rowspan ? columns.map(s => getProps(s).body) : null
 
     return h('table', {
       staticClass: 'km-table'
     }, [
       getHead(h, wrappers, this.table.thead),
-      h('tbody', this.rowspan && (this.table.tbody.reduce((res, row) => {
+      h('tbody', this.rowspan ? (this.table.tbody.reduce((res, row) => {
         return res.concat(getMRow(h, columns, bodyKeys, row))
-      }, [])) || this.table.tbody.map(row => getRow(h, columns, row))),
-      this.table.tfoot && getFoot(h, columns, this.table.tfoot) || ''
+      }, [])) : this.table.tbody.map(row => getRow(h, columns, row))),
+      this.table.tfoot ? getFoot(h, columns, this.table.tfoot) : ''
     ])
   }
 }
@@ -51,7 +51,6 @@ function getRow (h, columns, row) {
   return h('tr', columns.map(s => {
     var node = cloneVnode(s)
     var props = getProps(node)
-    orops.type = 'body'
     props.type = 'body'
     props.row = row
 
@@ -166,11 +165,11 @@ function adjustSpan (wrappers) {
 
       // row[j]位于子矩阵第一行
       if (node !== aboveNode) {
-        attrs.colspan = !attrs.colspan && 1 || (attrs.colspan + 1)
+        attrs.colspan = !attrs.colspan ? 1 : (attrs.colspan + 1)
       }
       // row[j]位于子矩阵第一列
       if (node !== prevNode) {
-        attrs.rowspan = !attrs.rowspan && 1 || (attrs.rowspan + 1)
+        attrs.rowspan = !attrs.rowspan ? 1 : (attrs.rowspan + 1)
       }
 
       // row[j]位于子矩阵左上角，渲染时保留
@@ -326,7 +325,7 @@ function parseMRow (row, keys) {
       rows = row.reduce((res, elem, i) => {
         res = res.concat(flattenField(elem, `[${i}]`).map(t => {
           return t.map(tk => {
-            return key && (key + tk) || tk
+            return key ? (key + tk) : tk
           })
         }))
 
@@ -344,7 +343,7 @@ function parseMRow (row, keys) {
         let val = row[k]
         let flatten = flattenField(val, k).map(t => {
           return t.map(tk => {
-            return key && `${key}.${tk}` || tk
+            return key ? `${key}.${tk}` : tk
           })
         })
 

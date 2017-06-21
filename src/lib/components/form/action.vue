@@ -18,11 +18,11 @@ export default {
     slots.forEach(function recr (slot) {
       var attrs = getAttrs(slot)
       if (['submit', 'reset'].indexOf(attrs.type) !== -1) {
+        let on = slot.data.on = slot.data.on || {}
         if (attrs.type === 'submit') {
           let classObj = slot.data.class = slot.data.class || {}
           classObj['km-disabled'] = self.submitting
 
-          let on = slot.data.on = slot.data.on || {}
           on.click = event => {
             event.stopPropagation()
             event.preventDefault()

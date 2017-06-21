@@ -25,8 +25,7 @@ export default {
   },
   watch: {
     value (val) {
-      this.$emit('change', val)
-      this.controlBus && this.controlBus.$emit('control.check')
+      this.text = val
     }
   },
   created () {
@@ -38,12 +37,14 @@ export default {
   methods: {
     onBlur () {
       this.active = false
-      this.text = this.text && this.text.trim() || undefined
+      this.text = this.text ? this.text.trim() : undefined
       if (this.number) {
         let n = +this.text
         this.text = (!n && n !== 0) ? this.text : n
       }
       this.$emit('input', this.text)
+      this.$emit('change', this.text)
+      this.controlBus && this.controlBus.$emit('control.check', this.text)
     },
     onFocus () {
       this.active = true

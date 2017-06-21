@@ -29,7 +29,7 @@ export default {
       type: Object,
       required: true
     },
-    edata: Object,
+    edata: Object
   },
   render (h) {
     var handler = {
