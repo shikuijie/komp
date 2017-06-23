@@ -16,6 +16,8 @@ import TipHead from './components/tip/head.vue'
 import TipBody from './components/tip/body.vue'
 import Table from './components/table/table.vue'
 import Tcell from './components/table/tcell.vue'
+import ModalShip from './components/modal/ship.vue'
+import ModalAnchor from './components/modal/anchor.vue'
 
 Vue.component('km-select', Select)
 Vue.component('km-option', SelectOption)
@@ -31,5 +33,7 @@ Vue.component('km-tip-head', TipHead)
 Vue.component('km-tip-body', TipBody)
 Vue.component('km-table', Table)
 Vue.component('km-tcell', Tcell)
+Vue.component('km-modal-anchor', ModalAnchor)
+Vue.component('km-modal-ship', ModalShip)
 
 export {Bus}
