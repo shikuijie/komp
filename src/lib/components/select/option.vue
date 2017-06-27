@@ -22,12 +22,12 @@ export default {
     },
     selectBus: Bus,
     // 收集所有 Option 的（label, value)
-    selectOptions: Object,
+    selectOptions: Array,
     // Select 组件的 model 值
     selectValue: null,
     multiple: Boolean,
     // 多选下拉框用来收集同组的 (label, value)
-    groupOptions: Object,
+    groupOptions: Array,
     // 嵌套深度
     level: Number
   },
@@ -37,27 +37,24 @@ export default {
     }
   },
   created () {
-    this.selectOptions[this.value] = this.label
+    this.mOption = {label: this.label, value: this.value}
+    this.selectOptions.push(this.mOption)
     if (this.groupOptions) {
-      this.groupOptions[this.value] = this.label
+      this.groupOptions.push(this.mOption)
     }
   },
   methods: {
     select () {
-      // 通知 Dropdown 组件
-      this.selectBus.$emit('dropdown.hide')
-      // 通知 Select 组件
       this.selectBus.$emit('select.change', this.value)
     },
     toggleSwitch () {
-      // 翻转 Checkbox 状态
       this.checkboxBus.$emit('toggle')
     }
   },
   destroyed () {
-    delete this.selectOptions[this.value]
+    this.selectOptions.splice(this.selectOptions.indexOf(this.mOption), 1)
     if (this.groupOptions) {
-      delete this.groupOptions[this.value]
+      this.groupOptions.splice(this.groupOptions.indexOf(this.mOption), 1)
     }
   }
 }

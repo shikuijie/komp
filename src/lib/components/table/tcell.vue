@@ -1,7 +1,7 @@
 <template>
-<span :is="type === 'body' ? 'td' : 'th'">
+<div :is="tag" class="km-tcell">
   <slot :row="row" :name="type">{{content}}</slot>
-</span>
+</div>
 </template>
 
 <script>
@@ -24,6 +24,17 @@ export default {
     body: String
   },
   computed: {
+    tag () {
+      // thead 中每个单元格 th 里面还有一层 div
+      // 这个主要是为了保证每一列通过样式设置的宽度有效
+      if (this.type === 'head') {
+        return 'div'
+      } else if (this.type === 'body') {
+        return 'td'
+      } else {
+        return 'th'
+      }
+    },
     content () {
       var field = this[this.type]
       return parseExpr(field, this.row) || field

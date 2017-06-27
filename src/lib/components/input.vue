@@ -2,7 +2,7 @@
 <div class="km-input" :class="{'km-disabled': disabled, 'km-focus': active}">
   <input type="text" v-model="text"
          :readonly="disabled" :placeholder="placeholder" 
-         @blur.stop="onBlur" @focus.stop="onFocus"/>
+         @blur.stop="onBlur" @focus.stop="onFocus">
 </div>
 </template>
 

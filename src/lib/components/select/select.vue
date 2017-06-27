@@ -29,8 +29,16 @@ export default {
   data () {
     return {
       // 收集 Option 组件的 (label, value)
-      options: {},
+      options: [],
       level: 0
+    }
+  },
+  computed: {
+    optionsMap () {
+      return this.options.reduce((res, opt) => {
+        res[opt.value] = opt.label
+        return res
+      }, {})
     }
   },
   watch: {
@@ -39,12 +47,12 @@ export default {
         if (val !== oval) {
           throw new Error('Model change is forbidden for multiple select component!')
         }
-        this.bus.$emit('dropdown.change', val.map(v => this.options[v]), true)
+        this.bus.$emit('dropdown.change', val.map(v => this.optionsMap[v]), true)
       } else {
-        if (val && !this.options[val]) {
+        if (val && !this.optionsMap[val]) {
           throw new Error('Model value of Select must be among values of Options')
         }
-        this.bus.$emit('dropdown.change', this.options[val])
+        this.bus.$emit('dropdown.change', this.optionsMap[val])
       }
     }
   },
@@ -58,6 +66,8 @@ export default {
       this.bus.$on('select.change', val => {
         this.$emit('input', val)
         this.$emit('change', val)
+
+        this.bus.$emit('dropdown.hide')
         this.controlBus && this.controlBus.$emit('control.check', val)
       })
     }
@@ -66,8 +76,8 @@ export default {
     if (this.multiple) {
       this.bus.$on('dropdown.clear', label => {
         if (label) {
-          let val = Object.keys(this.options).find(v => this.options[v] === label)
-          let idx = this.value.indexOf(val)
+          let opt = this.options.find(opt => opt.label === label)
+          let idx = this.value.indexOf(opt.value)
           if (idx !== -1) {
             this.value.splice(idx, 1)
           }
@@ -83,9 +93,9 @@ export default {
   },
   mounted () {
     if (this.multiple) {
-      this.bus.$emit('dropdown.change', this.value.map(v => this.options[v]), true)
+      this.bus.$emit('dropdown.change', this.value.map(v => this.optionsMap[v]), true)
     } else {
-      this.bus.$emit('dropdown.change', this.value ? this.options[this.value] : null)
+      this.bus.$emit('dropdown.change', this.value ? this.optionsMap[this.value] : null)
     }
   },
   destroyed () {
@@ -103,7 +113,6 @@ export default {
     var slots = this.$slots.default || []
     slots.forEach(slot => {
       let props = getProps(slot)
-      // 给子组件添加 props
       props.selectOptions = this.options
       props.selectValue = this.value
       props.selectExpand = this.expandable

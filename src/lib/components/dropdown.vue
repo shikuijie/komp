@@ -1,13 +1,13 @@
 <template>
-<div class="km-dropdown" :class="{km_dropdown_visible: visible}">
+<div class="km-dropdown" :class="{km_dropdown_visible: visible}" @click.stop="() => {}">
   <div class="km-input" @click.stop="toggle" :class="{'km-disabled': disabled, 'km-focus': visible}">
     <!-- 显示一个标签 -->
     <input type="text" :readonly="readonly" 
           :placeholder="labels && labels.length ? null : placeholder"
-          v-model="text"/>
+          v-model="text">
     <!-- 显示多个标签 -->
     <ul class="km_dropdown_labels" v-if="labels">
-      <li v-for="label in labels">{{label}} <i class="km-cursor icon-close-small" @click.stop="clear(label)"></i></li>
+      <li v-for="(label, i) in labels" :key="`${label}${i}`">{{label}} <i class="km-cursor icon-close-small" @click.stop="clear(label)"></i></li>
     </ul>
     <!-- 箭头指示图标和清除图标 -->
     <div class="km_dropdown_icon">
@@ -27,10 +27,10 @@
 import {isServer} from '../util'
 
 // 点击下拉框之外的位置来隐藏下拉框
-const Dropdown = {current: null}
+const Dropdown = {bus: null}
 if (!isServer()) {
   document.documentElement.addEventListener('click', () => {
-    Dropdown.current && Dropdown.current.$emit('dropdown.hide')
+    Dropdown.bus && Dropdown.bus.$emit('dropdown.hide')
   })
 }
 
@@ -50,10 +50,10 @@ export default {
       }
 
       // 打开之前，关闭页面上的其他下拉框
-      if (Dropdown.current && Dropdown.current !== this.bus) {
-        Dropdown.current.$emit('dropdown.hide')
+      if (Dropdown.bus && Dropdown.bus !== this.bus) {
+        Dropdown.bus.$emit('dropdown.hide')
       }
-      Dropdown.current = this.bus
+      Dropdown.bus = this.bus
 
       // 调整下拉框的位置
       var pos = this.$refs.body.getBoundingClientRect()
@@ -72,7 +72,7 @@ export default {
 
     // 收起下拉框
     this.bus.$on('dropdown.hide', () => {
-      Dropdown.current = null
+      Dropdown.bus = null
 
       this.visible = false
       // 父组件发送 hide 事件

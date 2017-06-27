@@ -87,7 +87,7 @@ export default {
         }
       }).then(err => {
         this.error = err || null
-        return err
+        return {name: this.name, error: err}
       })
     },
     requiredCheck (val) {

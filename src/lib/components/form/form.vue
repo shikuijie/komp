@@ -12,15 +12,24 @@ export default {
     }
   },
   created () {
-    this.mHasSubmitEvent = hasListener(this.$vnode, 'submit')
+    this.mHasSubmitEvent = !!hasListener(this.$vnode, 'submit')
+    this.mHasInvalidEvent = !!hasListener(this.$vnode, 'invalid')
     // 收集 control 的错误信息
     this.bus.$on('form.submit', () => {
       var checkers = this.bus.$emit('form.inner.check')
       return Promise.all(Array.isArray(checkers) ? checkers : [checkers]).then(errors => {
-        if (errors.every(_ => !_) && this.mHasSubmitEvent) {
-          return new Promise(resolve => {
-            this.$emit('submit', resolve)
-          })
+        var errs = errors.filter(_ => _.error)
+        if (errs.length === 0) {
+          if (this.mHasSubmitEvent) {
+            return new Promise(resolve => {
+              this.$emit('submit', resolve)
+            })
+          }
+        } else {
+          // 校验失败
+          if (this.mHasInvalidEvent) {
+            this.$emit('invalid', errs)
+          }
         }
       })
     })

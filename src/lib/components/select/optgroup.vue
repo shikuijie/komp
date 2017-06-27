@@ -12,14 +12,14 @@ export default {
     label: String,
     multiple: Boolean,
     selectBus: Bus,
-    selectOptions: Object,
+    selectOptions: Array,
     selectValue: null,
     selectExpand: Boolean,
     level: Number
   },
   data () {
     return {
-      options: this.multiple ? {} : undefined,
+      options: this.multiple ? [] : undefined,
       expanded: false,
       checkboxBus: this.multiple ? new Bus() : null
     }
@@ -52,8 +52,6 @@ export default {
       }
     })
 
-    var optionKeys = this.options && Object.keys(this.options)
-
     return h('ul', {
       staticClass: 'km-optgroup',
       class: {
@@ -84,19 +82,19 @@ export default {
         this.multiple ? h(Checkbox, {
           props: {
             bus: this.checkboxBus,
-            value: optionKeys.length && optionKeys.every(val => this.selectValue.indexOf(val) !== -1)
+            value: this.options.every(opt => this.selectValue.indexOf(opt.value) !== -1)
           },
           on: {
             change: val => {
               if (val) {
-                Object.keys(this.options).forEach(val => {
-                  if (this.selectValue.indexOf(val) === -1) {
-                    this.selectValue.push(val)
+                this.options.forEach(opt => {
+                  if (this.selectValue.indexOf(opt.value) === -1) {
+                    this.selectValue.push(opt.value)
                   }
                 })
               } else {
-                Object.keys(this.options).forEach(val => {
-                  var idx = this.selectValue.indexOf(val)
+                this.options.forEach(opt => {
+                  var idx = this.selectValue.indexOf(opt.value)
                   if (idx !== -1) {
                     this.selectValue.splice(idx, 1)
                   }

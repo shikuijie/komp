@@ -2,7 +2,7 @@
 <Dropdown class="km-datime" :class="{km_date_time: hastime}"
           :bus="bus" :readonly="true" :placeholder="placeholder" 
           :clearable="clearable" :disabled="disabled">
-  <div class="km-clearfix km_datime_frame" @click.stop>
+  <div class="km-clearfix km_datime_frame" @click.stop="() => {}">
     <div class="km_date km-pull-left">
       <!-- 当前年月及其调整按钮 -->
       <ul class="km_date_head km-clearfix">
@@ -16,15 +16,15 @@
         <!-- 周名作为表头 -->
         <thead>
           <tr>
-            <th v-for="w in weeks" v-text="w"></th>
+            <th v-for="(w, i) in weeks" :key="`${w}${i}`">{{w}}</th>
           </tr>
         </thead>
         <!-- 日期作为表体 -->
         <tbody>
-          <tr v-for="week in weekdays">
+          <tr v-for="(week, i) in weekdays" :key="i">
             <td class="km_date_dd" 
                 :class="{km_date_today: isToday(wd), km_date_active: isActiveDay(wd)}"
-                v-for="wd in week" @click.stop="selectDate(wd)">{{wd}}</td>
+                v-for="(wd, i) in week" :key="`${wd}${i}`" @click.stop="selectDate(wd)">{{wd}}</td>
           </tr>
         </tbody>
       </table>
@@ -38,7 +38,7 @@
           <Scroll :bus="bus" :hidden="true">
             <ul>
               <li :class="{km_time_active: isActiveTime(t)}"
-                  v-for="t in times" @click.stop="selectTime(t)">{{t}}</li>
+                  v-for="(t, i) in times" :key="`${t}${i}`" @click.stop="selectTime(t)">{{t}}</li>
             </ul>
           </Scroll>
         </li>
