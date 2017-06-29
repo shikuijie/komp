@@ -18,6 +18,11 @@ export default {
       }
     }
   },
+  data () {
+    return {
+      scrollable: true
+    }
+  },
   computed: {
     fixFirstCol () {
       return ['first', 'both'].indexOf(this.fixed) !== -1
@@ -25,6 +30,9 @@ export default {
     fixLastCol () {
       return ['last', 'both'].indexOf(this.fixed) !== -1
     }
+  },
+  mounted () {
+    this.scrollable = this.bus.$emit('scroll.scrollable')
   },
   render (h) {
     var wrappers = getWrappers(this.$slots.default)

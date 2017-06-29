@@ -86,6 +86,7 @@
         }
         this.scroll(dir.toUpperCase(), size)
       })
+      this.bus.$on('scroll.scrollable', () => !this.noscroll)
     },
     mounted () {
       this.bus.$emit('scroll.reset', 'x')
@@ -94,6 +95,7 @@
     destroyed () {
       this.bus.$off('scroll.reset')
       this.bus.$off('scroll.run')
+      this.bus.$off('scroll.scrollable')
     },
     methods: {
       startDrag (dir, pos) {
