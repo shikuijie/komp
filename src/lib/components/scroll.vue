@@ -69,6 +69,9 @@
     },
     created () {
       this.mSpeed = 8
+      this.mElSize = {X: 0, Y: 0}
+      this.mBodySize = {X: 0, Y: 0}
+      this.mScrolling = {X: false, Y: false}
       this.bus.$on('scroll.reset', (dir, init) => {
         if (!/[xXyY]/.test(dir)) {
           console.warn("Scroll's 'reset' event only take x|X|y|Y as the first argument")
@@ -85,9 +88,6 @@
       })
     },
     mounted () {
-      this.mElSize = {X: 0, Y: 0}
-      this.mBodySize = {X: 0, Y: 0}
-      this.mScrolling = {X: false, Y: false}
       this.bus.$emit('scroll.reset', 'x')
       this.bus.$emit('scroll.reset', 'y')
     },

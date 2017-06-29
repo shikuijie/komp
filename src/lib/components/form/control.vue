@@ -39,6 +39,7 @@ export default {
     }
   },
   created () {
+    this.mHasCheckEvent = !!hasListener(this.$vnode, 'check')
     this.bus.$on('control.check', val => {
       val = val || this.bus.$emit('control.getvalue')
       return this.check(val)
@@ -52,9 +53,6 @@ export default {
       this.mFormCheckId = this.formBus.$on('form.inner.check', () => this.bus.$emit('control.check'))
       this.mFormClearId = this.formBus.$on('form.inner.clear', () => this.bus.$emit('control.clear'))
     }
-  },
-  mounted () {
-    this.mHasCheckEvent = hasListener(this.$vnode, 'check')
   },
   destroyed () {
     this.bus.$off('control.check')
