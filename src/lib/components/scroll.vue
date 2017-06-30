@@ -86,7 +86,7 @@
         }
         this.scroll(dir.toUpperCase(), size)
       })
-      this.bus.$on('scroll.scrollable', () => !this.noscroll)
+      this.bus.$on('scroll.scrollable', dir => !this.noscroll[dir.toUpperCase()])
     },
     mounted () {
       this.bus.$emit('scroll.reset', 'x')

@@ -1,6 +1,7 @@
 <script>
 import kmTable from './table.vue'
 import Scroll from '../scroll.vue'
+import Bus from '../../bus'
 import {getWrappers} from './tool'
 import {cloneVnode} from '../../vnode'
 
@@ -20,19 +21,20 @@ export default {
   },
   data () {
     return {
-      scrollable: true
+      scrollable: true,
+      bus: new Bus()
     }
   },
   computed: {
     fixFirstCol () {
-      return ['first', 'both'].indexOf(this.fixed) !== -1
+      return this.scrollable && ['first', 'both'].indexOf(this.fixed) !== -1
     },
     fixLastCol () {
-      return ['last', 'both'].indexOf(this.fixed) !== -1
+      return this.scrollable && ['last', 'both'].indexOf(this.fixed) !== -1
     }
   },
   mounted () {
-    this.scrollable = this.bus.$emit('scroll.scrollable')
+    this.scrollable = this.bus.$emit('scroll.scrollable', 'x')
   },
   render (h) {
     var wrappers = getWrappers(this.$slots.default)
@@ -40,7 +42,11 @@ export default {
     return h('div', {
       staticClass: 'km-table-fixcol'
     }, [
-      h(Scroll, [
+      h(Scroll, {
+        props: {
+          bus: this.bus 
+        }
+      }, [
         h(kmTable, {
           staticClass: 'km-table-middle',
           props: {
@@ -91,7 +97,7 @@ export default {
     width: 100%;
   }
 
-  .km-table-first {
+  .km-table.km-table-first {
     position: absolute;
     left: 0;
     top: 0;
@@ -100,7 +106,7 @@ export default {
     box-shadow: 3px 0 5px @border-slight;
   }
 
-  .km-table-last {
+  .km-table.km-table-last {
     position: absolute;
     right: 0;
     top: 0;

@@ -39,6 +39,7 @@ export default {
 
 .km-bordered .km-table,
 .km-table.km-bordered {
+  min-width: 100%;
   border-collapse: collapse;
 
   th, td {
