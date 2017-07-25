@@ -1,17 +1,17 @@
 <template>
-<li class="km-option" v-if="multiple" :level="level" @click.stop="toggleSwitch">
-  <km-checkbox :bus="checkboxBus" v-model="selectValue" :onvalue="value"></km-checkbox>
-  <slot>{{label}}</slot>
-</li>
-<li class="km-option" @click.stop="select" :level="level" v-else>
-  <slot>{{label}}</slot>
+<li class="km-option" @click.stop="select">
+  <slot>
+    <div class="km_option_label">
+      <km-checkbox v-if="multiple" :nostop="true" :value="modelValue.indexOf(value) !== -1"></km-checkbox>{{label}}
+    </div>
+  </slot>
 </li>
 </template>
 
 <script>
-import Bus from '../../bus'
+import Bus from 'lib/bus'
 export default {
-  name: 'km-select-option',
+  name: 'km-option',
   props: {
     label: {
       type: String,
@@ -20,42 +20,44 @@ export default {
     value: {
       required: true
     },
-    selectBus: Bus,
-    // 收集所有 Option 的（label, value)
-    selectOptions: Array,
-    // Select 组件的 model 值
-    selectValue: null,
-    multiple: Boolean,
-    // 多选下拉框用来收集同组的 (label, value)
-    groupOptions: Array,
-    // 嵌套深度
-    level: Number
-  },
-  data () {
-    return {
-      checkboxBus: this.multiple ? new Bus() : null
-    }
-  },
-  created () {
-    this.mOption = {label: this.label, value: this.value}
-    this.selectOptions.push(this.mOption)
-    if (this.groupOptions) {
-      this.groupOptions.push(this.mOption)
-    }
+    topBus: Bus,
+    groupBus: Bus,
+    modelValue: null,
+    multiple: Boolean
   },
   methods: {
     select () {
-      this.selectBus.$emit('select.change', this.value)
-    },
-    toggleSwitch () {
-      this.checkboxBus.$emit('toggle')
+      if (this.multiple) {
+        let idx = this.modelValue.indexOf(this.value)
+        if (idx === -1) {
+          this.modelValue.push(this.value)
+        } else {
+          this.modelValue.splice(idx, 1)
+        }
+      } else {
+        this.topBus.$emit('option.change', this.label, this.value)
+      }
     }
   },
+  created () {
+    this.topBus.$emit('option.add', this.label, this.value)
+    this.groupBus && this.groupBus.$emit('option.add', this.value)
+  },
   destroyed () {
-    this.selectOptions.splice(this.selectOptions.indexOf(this.mOption), 1)
-    if (this.groupOptions) {
-      this.groupOptions.splice(this.groupOptions.indexOf(this.mOption), 1)
-    }
+    this.topBus.$emit('option.delete', this.value)
+    this.groupBus && this.groupBus.$emit('option.delete', this.value)
   }
 }
 </script>
+
+<style lang="less">
+@import (reference) "./style.less";
+
+.km-option {
+  display: inline-block;
+  width: 100%;
+  .km_option_label {
+    .define-option-style();
+  }
+}
+</style>

@@ -1,29 +1,31 @@
-import './styles/index.less'
+import 'style/index.less'
 
 import Vue from 'vue'
-import Bus from './bus'
-import Select from './components/select/select.vue'
-import SelectOption from './components/select/option.vue'
-import SelectOptgroup from './components/select/optgroup.vue'
-import Checkbox from './components/checkbox.vue'
-import Scroll from './components/scroll.vue'
-import Datepicker from './components/datepicker.vue'
-import Input from './components/input.vue'
-import FormControl from './components/form/control.vue'
-import FormAction from './components/form/action.vue'
-import Form from './components/form/form.vue'
-import TipAnchor from './components/tip/anchor.vue'
-import TipShip from './components/tip/ship.vue'
-import Table from './components/table/table.vue'
-import TableScroll from './components/table/scroll.vue'
-import Tcell from './components/table/tcell.vue'
-import ModalShip from './components/modal/ship.vue'
-import ModalAnchor from './components/modal/anchor.vue'
-import Flash from './components/flash.vue'
+import Bus from 'lib/bus'
+import Checkbox from 'komp/checkbox.vue'
+import Scroll from 'komp/scroll.vue'
+import Datepicker from 'komp/datepicker.vue'
+import Input from 'komp/input.vue'
+import FormControl from 'komp/form/control.vue'
+import FormAction from 'komp/form/action.vue'
+import Form from 'komp/form/form.vue'
+import TipAnchor from 'komp/tip/anchor.vue'
+import TipShip from 'komp/tip/ship.vue'
+import Table from 'komp/table/table.vue'
+import ColfixTable from 'komp/table/colfix.vue'
+import Tcell from 'komp/table/tcell.vue'
+import ModalShip from 'komp/modal/ship.vue'
+import ModalAnchor from 'komp/modal/anchor.vue'
+import Notice from 'komp/notice.vue'
+import Suggest from 'komp/select/suggest.vue'
+import Select from 'komp/select/select.vue'
+import Option from 'komp/select/option.vue'
+import Optgrp from 'komp/select/optgrp.vue'
 
 Vue.component('km-select', Select)
-Vue.component('km-option', SelectOption)
-Vue.component('km-optgroup', SelectOptgroup)
+Vue.component('km-suggest', Suggest)
+Vue.component('km-option', Option)
+Vue.component('km-optgrp', Optgrp)
 Vue.component('km-checkbox', Checkbox)
 Vue.component('km-scroll', Scroll)
 Vue.component('km-datepicker', Datepicker)
@@ -34,10 +36,10 @@ Vue.component('km-form', Form)
 Vue.component('km-tip-anchor', TipAnchor)
 Vue.component('km-tip-ship', TipShip)
 Vue.component('km-table', Table)
-Vue.component('km-table-scroll', TableScroll)
+Vue.component('km-colfix-table', ColfixTable)
 Vue.component('km-tcell', Tcell)
 Vue.component('km-modal-anchor', ModalAnchor)
 Vue.component('km-modal-ship', ModalShip)
-Vue.component('km-flash', Flash)
+Vue.component('km-notice', Notice)
 
 export {Bus}

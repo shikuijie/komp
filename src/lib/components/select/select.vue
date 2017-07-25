@@ -1,14 +1,12 @@
 <script>
-import {getProps} from '../../vnode'
-import Bus from '../../bus'
-import Dropdown from '../dropdown.vue'
-import Checkbox from '../checkbox.vue'
-import Scroll from '../scroll.vue'
+import Bus from 'lib/bus'
+import {getProps} from 'lib/vnode'
+import Scroll from 'komp/scroll.vue'
+import Dropdown from 'komp/dropdown.vue'
 
 export default {
   components: {
     Dropdown,
-    Checkbox,
     Scroll
   },
   props: {
@@ -23,161 +21,122 @@ export default {
     disabled: Boolean,
     placeholder: String,
     clearable: Boolean,
-    expandable: Boolean,
     multiple: Boolean
-  },
-  data () {
-    return {
-      // 收集 Option 组件的 (label, value)
-      options: [],
-      level: 0
-    }
   },
   computed: {
     optionsMap () {
       return this.options.reduce((res, opt) => {
-        res[opt.value] = opt.label
+        res.set(opt.value, opt.label)
         return res
-      }, {})
+      }, new Map())
     }
   },
-  watch: {
-    value (val, oval) {
+  data () {
+    return {
+      options: []
+    }
+  },
+  methods: {
+    clear (val) {
       if (this.multiple) {
-        if (val !== oval) {
-          throw new Error('Model change is forbidden for multiple select component!')
-        }
-        this.bus.$emit('dropdown.change', val.map(v => this.optionsMap[v]), true)
-      } else {
-        if (val && !this.optionsMap[val]) {
-          throw new Error('Model value of Select must be among values of Options')
-        }
-        this.bus.$emit('dropdown.change', this.optionsMap[val])
-      }
-    }
-  },
-  created () {
-    if (this.multiple && !Array.isArray(this.value)) {
-      throw new Error('Model of multiple select must be an array!')
-    }
-
-    // 将选中的 Option 组件的 value 值同步给父组件
-    if (!this.multiple) {
-      this.bus.$on('select.change', val => {
-        this.$emit('input', val)
-        this.$emit('change', val)
-
-        this.bus.$emit('dropdown.hide')
-        this.controlBus && this.controlBus.$emit('control.check', val)
-      })
-    }
-
-    // 下拉框发送 clear 事件来清空选中的数据
-    if (this.multiple) {
-      this.bus.$on('dropdown.clear', label => {
-        if (label) {
-          let opt = this.options.find(opt => opt.label === label)
-          let idx = this.value.indexOf(opt.value)
-          if (idx !== -1) {
-            this.value.splice(idx, 1)
-          }
+        if (val) {
+          this.value.splice(this.value.indexOf(val), 1)
         } else {
           this.value.splice(0, this.value.length)
         }
-      })
-    }
-
-    if (this.controlBus) {
-      this.controlBus.$on('control.getvalue', () => this.value)
-    }
-  },
-  mounted () {
-    if (this.multiple) {
-      this.bus.$emit('dropdown.change', this.value.map(v => this.optionsMap[v]), true)
-    } else {
-      this.bus.$emit('dropdown.change', this.value ? this.optionsMap[this.value] : null)
-    }
-  },
-  destroyed () {
-    if (!this.multiple) {
-      this.bus.$off('select.change')
-    } else {
-      this.bus.$off('dropdown.clear')
-    }
-
-    if (this.controlBus) {
-      this.controlBus.$off('control.getvalue')
+      } else {
+        this.$emit('input', null)
+      }
     }
   },
   render (h) {
     var slots = this.$slots.default || []
     slots.forEach(slot => {
       let props = getProps(slot)
-      props.selectOptions = this.options
-      props.selectValue = this.value
-      props.selectExpand = this.expandable
+      props.topBus = this.bus
+
       props.multiple = this.multiple
-      props.level = this.level + 1
-      props.selectBus = this.bus
+      if (this.multiple) {
+        props.modelValue = this.value
+      }
     })
 
-    return h(Dropdown, {
+    var data = {
       staticClass: 'km-select',
-      attrs: {
-        multiple: this.multiple
+      class: {
+        km_multiple: this.multiple,
+        km_control: !!this.controlBus
       },
       props: {
         bus: this.bus,
         readonly: true,
-        disabled: this.disabled,
-        clearable: this.clearable,
-        eventToClear: this.multiple,
+        loading: !slots.length,
         placeholder: this.placeholder,
-        loading: !slots.length
-      }
-    }, [
-      slots.length ? h(Scroll, {
-        props: {
-          hidden: true,
-          bus: this.bus
+        disabled: this.disabled, clearable: this.clearable,
+        label: (this.multiple && this.value.length) ? ' ' : this.optionsMap.get(this.value)
+      },
+      on: {clear: this.clear}
+    }
+
+    var labels = this.multiple ? h('ul', {
+      staticClass: 'km_label_list', slot: 'label'
+    }, this.value.map(val => h('li', [
+      this.optionsMap.get(val),
+      h('i', {
+        staticClass: 'km-pointer icon-close-small',
+        on: {
+          click: $event => {
+            $event.stopPropagation()
+            this.clear(val)
+          }
         }
-      }, [
-        h('ul', slots)
-      ]) : ''
-    ])
+      })
+    ]))) : ''
+
+    var list = slots.length ? h(Scroll, {
+      props: {hidden: true, bus: this.bus}
+    }, [
+      h('ul', slots)
+    ]) : ''
+
+    return h(Dropdown, data, [labels, list])
+  },
+  created () {
+    if (this.multiple && !Array.isArray(this.value)) {
+      throw new Error('Model of multiple must be an array!')
+    }
+
+    this.bus.$on('option.add', (label, value) => {
+      this.options.push({label, value})
+    })
+    this.bus.$on('option.delete', value => {
+      this.options = this.options.filter(opt => opt.value !== value)
+    })
+
+    // 将选中的 Option 组件的 value 值同步给父组件
+    !this.multiple && this.bus.$on('option.change', (label, value) => {
+      this.$emit('input', value)
+      this.$emit('change', value)
+
+      this.bus.$emit('dropdown.hide')
+      this.controlBus && this.controlBus.$emit('control.check', value)
+    })
+
+    this.controlBus && this.controlBus.$on('control.getvalue', () => this.value)
+  },
+  destroyed () {
+    this.bus.$off('option.add')
+    this.bus.$off('option.delete')
+    !this.multiple && this.bus.$off('option.change')
+
+    this.controlBus && this.controlBus.$off('control.getvalue')
   }
 }
 </script>
 
 <style lang="less">
-@import (reference) "../../styles/color.less";
-@select-padding-left: 14px;
-@select-height: 32px;
-
-.km-select.km-dropdown {
-  .km_optgroup_name,
-  .km-option {
-    height: @select-height;
-    line-height: @select-height;
-
-    > * {
-      display: inline-block;
-    }
-
-    &:hover {
-      background: @bg-light;
-      color: @primary;
-      cursor: default;
-    }
-    &[level="1"] {
-      padding-left: @select-padding-left;
-    }
-    &[level="2"] {
-      padding-left: @select-padding-left * 2;
-    }
-    &[level="3"] {
-      padding-left: @select-padding-left * 3;
-    }
-  }
+@import (reference) "./style.less";
+.km-select {
+  .define-labels-style();
 }
 </style>

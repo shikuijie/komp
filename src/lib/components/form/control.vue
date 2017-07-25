@@ -1,7 +1,7 @@
 <script>
-import {getProps, hasListener} from '../../vnode'
-import {Type} from '../../util'
-import Bus from '../../bus'
+import {getProps, hasListener} from 'lib/vnode'
+import {Type} from 'lib/util'
+import Bus from 'lib/bus'
 
 export default {
   name: 'km-form-control',
@@ -165,13 +165,7 @@ export default {
     display: inline-block;
   }
 
-  .km-dropdown {
-    width: 100%;
-    .km-input {
-      width: 100%;
-    }
-  }
-  .km-input {
+  .km_control {
     width: 100%;
   }
 

@@ -1,5 +1,5 @@
 <script>
-import {getProps} from '../../vnode'
+import {getProps} from 'lib/vnode'
 import {getHead, getRow, getMRow, getFoot, getWrappers} from './tool'
 
 export default {
@@ -35,7 +35,7 @@ export default {
 </script>
 
 <style lang="less">
-@import (reference) "../../styles/color.less";
+@import (reference) "~style/color.less";
 
 .km-bordered .km-table,
 .km-table.km-bordered {

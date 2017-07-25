@@ -1,9 +1,9 @@
 <script>
 import kmTable from './table.vue'
-import Scroll from '../scroll.vue'
-import Bus from '../../bus'
+import Scroll from 'komp/scroll.vue'
+import Bus from 'lib/bus'
 import {getWrappers} from './tool'
-import {cloneVnode} from '../../vnode'
+import {cloneVnode} from 'lib/vnode'
 
 export default {
   components: {
@@ -40,7 +40,7 @@ export default {
     var wrappers = getWrappers(this.$slots.default)
 
     return h('div', {
-      staticClass: 'km-table-fixcol'
+      staticClass: 'km-colfix-table'
     }, [
       h(Scroll, {
         props: {
@@ -87,9 +87,9 @@ export default {
 </script>
 
 <style lang="less">
-@import (reference) "../../styles/color.less";
+@import (reference) "~style/color.less";
 
-.km-table-fixcol {
+.km-colfix-table {
   position: relative;
   overflow: hidden;
 

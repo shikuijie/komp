@@ -11,9 +11,9 @@
 
 <script>
 import Vue from 'vue'
-import Bus from '../../bus'
-import {isServer} from '../../util'
-import {hasListener} from '../../vnode'
+import Bus from 'lib/bus'
+import {isServer} from 'lib/util'
+import {hasListener} from 'lib/vnode'
 
 const Tip = {bus: null, eid: null, edata: null}
 if (!isServer()) {
@@ -214,7 +214,7 @@ export default {
 </script>
 
 <style lang="less">
-@import (reference) '../../styles/color.less';
+@import (reference) '~style/color.less';
 
 @zindex-tip: 3000;
 .km-tip-ship {

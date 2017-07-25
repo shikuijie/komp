@@ -1,18 +1,18 @@
 <template>
-<div v-if="visible" class="km-modal-ship" 
-    :class="`km_modal_${nobg ? 'no' : ''}bg`" @click.stop="nobg ? () => {} : toggle(eid, edata)">
-  <div class="km_modal_main" @click.stop="() => {}">
-    <slot :eid="eid" :edata="edata"></slot>
+<div class="km-modal-ship"
+    :class="{km_modal_nobg: nobg, km_modal_visible: visible}"
+    @click.stop="nobg ? noop() : toggle(eid, edata)">
+  <div class="km_modal_main" @click.stop="noop">
+    <slot v-if="visible" :eid="eid" :edata="edata"></slot>
     <div class="km_modal_loading" v-show="loading">数据加载中，请稍候 ...</div>
     <i class="icon-close km_modal_close" @click.stop="toggle(eid, edata)"></i>
   </div>
 </div>
-<div v-else></div>
 </template>
 
 <script>
-import Bus from '../../bus'
-import {hasListener} from '../../vnode'
+import Bus from 'lib/bus'
+import {hasListener} from 'lib/vnode'
 
 export default {
   props: {
@@ -36,6 +36,7 @@ export default {
     }
   },
   methods: {
+    noop () {},
     toggle (eid, edata) {
       if (this.visible) {
         return this.hide(eid, edata)
@@ -92,10 +93,10 @@ export default {
 </script>
 
 <style lang="less">
-@import (reference) "../../styles/color.less";
-@import (reference) "../../styles/size.less";
-
+@import (reference) "~style/color.less";
+@import (reference) "~style/size.less";
 @modal-border-color: @border-light;
+@zindex-modal: 3000;
 
 .km-modal-ship {
   position: fixed;
@@ -104,13 +105,22 @@ export default {
   right: 0;
   bottom: 0;
   overflow: auto;
+  background: rgba(0,0,0,.3);
 
-  &.km_modal_bg {
-    background: rgba(0,0,0,.3);
+  visibility: hidden;
+  z-index: -1;
+  opacity: 0;
+
+  &.km_modal_visible {
+    opacity: 1;
+    visibility: visible;
+    z-index: @zindex-modal;
   }
+
   &.km_modal_nobg {
+    background: none;
     .km_modal_main {
-      box-shadow: 0px 0px 20px rgba(0,0,0,.3);
+      box-shadow: 0px 0px 20px @modal-border-color;
     }
   }
 

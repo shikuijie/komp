@@ -1,24 +1,20 @@
 <template>
-<span class="km-checkbox km-hand-cursor" @click.stop="toggle">
+<span class="km-checkbox km-pointer" @click="toggle">
   <i :class="{'icon-check-on': isChecked, 'icon-check-off': !isChecked}">
   </i><span>{{label}}</span>
 </span>
 </template>
 
 <script>
-import Bus from '../bus'
+import Bus from 'lib/bus'
 
 export default {
   props: {
-    bus: {
-      type: Bus,
-      default () {
-        return new Bus()
-      }
-    },
+    controlBus: Bus,
     value: null,
     label: String,
     disabled: Boolean,
+    nostop: Boolean,
     onvalue: {
       default: true
     },
@@ -32,16 +28,11 @@ export default {
       return Array.isArray(this.value)
     }
   },
-  created () {
-    this.bus.$on('toggle', () => {
-      this.toggle()
-    })
-  },
-  destroyed () {
-    this.bus.$off('toggle')
-  },
   methods: {
-    toggle () {
+    toggle ($event) {
+      if (!this.nostop) {
+        return $event.stopPropagation()
+      }
       var nval = null
       if (this.isGroup) {
         if (this.isChecked) {
@@ -56,13 +47,20 @@ export default {
       }
 
       this.$emit('change', nval)
+      this.controlBus && this.controlBus.$emit('control.check', nval)
     }
-  }
+  },
+  created () {
+    this.controlBus && this.controlBus.$on('control.getvalue', () => this.value)
+  },
+  destroyed () {
+    this.controlBus && this.controlBus.$off('control.getvalue')
+  },
 }
 </script>
 
 <style lang="less">
-@import (reference) "../styles/color.less";
+@import (reference) "~style/color.less";
 @checkbox-uncheck-color: @light;
 @checkbox-label-margin: 5px;
 

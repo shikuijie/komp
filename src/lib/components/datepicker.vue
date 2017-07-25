@@ -1,15 +1,15 @@
 <template>
 <Dropdown class="km-datime" :class="{km_date_time: hastime}"
-          :bus="bus" :readonly="true" :placeholder="placeholder" 
-          :clearable="clearable" :disabled="disabled">
+          :bus="bus" :label="fullStr" :readonly="true"
+          :placeholder="placeholder" :clearable="clearable" :disabled="disabled">
   <div class="km-clearfix km_datime_frame" @click.stop="() => {}">
     <div class="km_date km-pull-left">
       <!-- 当前年月及其调整按钮 -->
       <ul class="km_date_head km-clearfix">
-        <li class="km_date_prev km-pull-left"><i class="km-cursor icon-dcaret-left" @click.stop="prevYear"></i></li>
-        <li class="km_date_prev km-pull-left"><i class="km-cursor icon-caret-left" @click.stop="prevMonth"></i></li>
-        <li class="km_date_next km-pull-right"><i class="km-cursor icon-dcaret-right" @click.stop="nextYear"></i></li>
-        <li class="km_date_next km-pull-right"><i class="km-cursor icon-caret-right" @click.stop="nextMonth"></i></li>
+        <li class="km_date_prev km-pull-left"><i class="km-pointer icon-dcaret-left" @click.stop="prevYear"></i></li>
+        <li class="km_date_prev km-pull-left"><i class="km-pointer icon-caret-left" @click.stop="prevMonth"></i></li>
+        <li class="km_date_next km-pull-right"><i class="km-pointer icon-dcaret-right" @click.stop="nextYear"></i></li>
+        <li class="km_date_next km-pull-right"><i class="km-pointer icon-caret-right" @click.stop="nextMonth"></i></li>
         <li class="km_date_yymm">{{yearMonthStr}}</li>
       </ul>
       <table class="km_date_body">
@@ -32,7 +32,7 @@
     <!-- 时间选择器 -->
     <div class="km_time km-pull-left" v-if="hastime">
       <ul class="km_time_bar">
-        <li class="km_time_prev"><i class="km-cursor icon-arrow-up" @click.stop="prevTimes"></i></li>
+        <li class="km_time_prev"><i class="km-pointer icon-arrow-up" @click.stop="prevTimes"></i></li>
         <li class="km_time_list">
           <!-- 备选时间列表，间隔30s -->
           <Scroll :bus="bus" :hidden="true">
@@ -42,7 +42,7 @@
             </ul>
           </Scroll>
         </li>
-        <li class="km_time_next"><i class="km-cursor icon-arrow-down" @click.stop="nextTimes"></i></li>
+        <li class="km_time_next"><i class="km-pointer icon-arrow-down" @click.stop="nextTimes"></i></li>
       </ul>
     </div>
   </div>
@@ -50,9 +50,9 @@
 </template>
 
 <script>
-import Dropdown from './dropdown.vue'
-import Scroll from './scroll.vue'
-import Bus from '../bus'
+import Dropdown from 'komp/dropdown.vue'
+import Scroll from 'komp/scroll.vue'
+import Bus from 'lib/bus'
 export default {
   components: {
     Dropdown,
@@ -104,7 +104,6 @@ export default {
     if (this.hastime && this.currentDate.hh && this.currentDate.mm) {
       offset = (this.currentDate.hh - start) * 2
     }
-    this.bus.$emit('dropdown.change', this.fullStr)
     this.bus.$emit('scroll.reset', 'y', (offset || 4) * 30 + 'px')
   },
   computed: {
@@ -150,11 +149,6 @@ export default {
     },
     removable () {
       return !this.disabled && this.clearable && this.value
-    }
-  },
-  watch: {
-    value (val, oval) {
-      this.bus.$emit('dropdown.change', this.fullStr)
     }
   },
   methods: {
@@ -286,7 +280,7 @@ function getLastDay (y, m) {
 </script>
 
 <style lang="less">
-@import (reference) "../styles/color.less";
+@import (reference) "~style/color.less";
 
 .km-dropdown.km-datime {
   display: inline-block;

@@ -1,30 +1,30 @@
 <template>
-<div class="km-dropdown" :class="{km_dropdown_visible: visible}" @click.stop="() => {}">
-  <div class="km-input" @click.stop="toggle" :class="{'km-disabled': disabled, 'km-focus': visible}">
-    <!-- 显示一个标签 -->
-    <input type="text" :readonly="readonly" 
-          :placeholder="labels && labels.length ? null : placeholder"
-          v-model="text">
-    <!-- 显示多个标签 -->
-    <ul class="km_dropdown_labels" v-if="labels">
-      <li v-for="(label, i) in labels" :key="`${label}${i}`">{{label}} <i class="km-cursor icon-close-small" @click.stop="clear(label)"></i></li>
-    </ul>
+<div class="km-dropdown" @click.stop="() => {}"
+  :class="{km_dropdown_visible: visible, km_dropdown_active: active}">
+  <div class="km-input" @click.stop="toggle" :class="{'km-disabled': disabled, 'km-focus': active}">
+    <!-- 显示一个文本 -->
+    <input type="text" v-if="readonly" :readonly="true" 
+          :placeholder="placeholder" :value="label">
+
+    <!-- label slot  -->
+    <slot name="label"></slot>
+
     <!-- 箭头指示图标和清除图标 -->
     <div class="km_dropdown_icon">
-      <i class="icon-close km-cursor" v-if="removable" @click.stop="clear()"></i>
-      <i :class="`icon-arrow-${this.visible ? 'up' : 'down'}`" class="km-cursor" v-else></i>
+      <i class="icon-close km-pointer" v-if="removable" @click.stop="clear()"></i>
+      <i :class="`icon-arrow-${visible ? 'up' : 'down'}`" class="km-pointer" v-else></i>
     </div>
   </div>
   <!-- 下拉框内容区域 -->
   <div class="km-dropdown-frame" ref="body" :style="bodyPosition">
-    <div v-if="loading" class="km_dropdown_load">加载中，请稍候</div>
-    <slot v-else></slot>
+    <slot></slot>
   </div>
 </div>
 </template>
 
 <script>
-import {isServer} from '../util'
+import {isServer} from 'lib/util'
+import {hasListener} from 'lib/vnode'
 
 // 点击下拉框之外的位置来隐藏下拉框
 const Dropdown = {bus: null}
@@ -35,14 +35,56 @@ if (!isServer()) {
 }
 
 export default {
-  created () {
-    this.bus.$on('dropdown.change', (label, multiple) => {
-      if (!multiple) {
-        this.text = label
-      } else if (Array.isArray(label)) {
-        this.labels = label
+  props: [
+    'bus', // 和父组件通信
+    'label', // 显示文本
+    'readonly', // 文本框是否是只读的
+    'disabled', // 文本框是否已经非能了
+    'clearable', // 文本框是否可以清空
+    'placeholder', // 文本框占位字符串
+    'loading' // 下拉框中的内容正在加载
+  ],
+  data () {
+    return {
+      active: false,
+      bodyPosition: {
+        left: 0,
+        right: 'auto'
+      },
+      text: null,
+      labels: null,
+
+      inputing: false,
+    }
+  },
+  computed: {
+    removable () {
+      return !this.disabled && !this.loading && this.clearable && this.label
+    },
+    visible () {
+      return this.active && !this.loading
+    }
+  },
+  methods: {
+    toggle () {
+      // 可编辑下拉框在收起状态下能点击展开，但在展开状态下并不会点击收起
+      if (!this.readonly && this.active) {
+        return
       }
-    })
+      this.bus.$emit(this.active ? 'dropdown.hide' : 'dropdown.show')
+    },
+    clear () {
+      if (this.mHasClearEvent) {
+        // 通知父组件自己处理
+        this.$emit('clear')
+      } else {
+        // 直接清空父组件中的 value 值
+        this.$parent.$emit('input', null)
+      }
+    }
+  },
+  created () {
+    this.mHasClearEvent = hasListener(this.$vnode, 'clear')
     // 打开下拉框
     this.bus.$on('dropdown.show', () => {
       if (this.disabled) {
@@ -50,8 +92,12 @@ export default {
       }
 
       // 打开之前，关闭页面上的其他下拉框
-      if (Dropdown.bus && Dropdown.bus !== this.bus) {
-        Dropdown.bus.$emit('dropdown.hide')
+      if (Dropdown.bus) {
+        if (Dropdown.bus !== this.bus) {
+          Dropdown.bus.$emit('dropdown.hide')
+        } else {
+          return
+        }
       }
       Dropdown.bus = this.bus
 
@@ -65,7 +111,7 @@ export default {
         this.bodyPosition.right = 0
         this.bodyPosition.left = 'auto'
       }
-      this.visible = true
+      this.active = true
       // 父组件发送 show 事件
       this.$parent.$emit('show')
     })
@@ -74,67 +120,21 @@ export default {
     this.bus.$on('dropdown.hide', () => {
       Dropdown.bus = null
 
-      this.visible = false
+      this.active = false
       // 父组件发送 hide 事件
       this.$parent.$emit('hide')
     })
   },
   destroyed () {
-    this.bus.$off('dropdown.change')
     this.bus.$off('dropdown.show')
     this.bus.$off('dropdown.hide')
-  },
-  props: [
-    'bus', // 和父组件通信
-    'readonly', // 文本框是否是只读的
-    'disabled', // 文本框是否已经非能了
-    'clearable', // 文本框是否可以清空
-    'eventToClear', // 是否发送事件来清空
-    'placeholder', // 文本框占位字符串
-    'loading' // 下拉框中的内容正在加载
-  ],
-  data () {
-    return {
-      visible: false,
-      bodyPosition: {
-        left: 0,
-        right: 'auto'
-      },
-      text: null,
-      labels: null
-    }
-  },
-  computed: {
-    removable () {
-      if (this.disabled || this.loading || !this.clearable) {
-        return false
-      }
-      return this.labels ? !!this.labels.length : !!this.label
-    }
-  },
-  methods: {
-    toggle () {
-      this.bus.$emit(this.visible ? 'dropdown.hide' : 'dropdown.show')
-    },
-    clear (label) {
-      if (!this.eventToClear) {
-        // 非多选下拉框直接清空父组件中的 value 值
-        this.$parent.$emit('input', null)
-      } else {
-        // 多选下拉框则通知父组件自己处理
-        this.bus.$emit('dropdown.clear', label)
-      }
-    }
   }
 }
 </script>
 
 <style lang="less">
-@import (reference) "../styles/color.less";
-@import (reference) "../styles/size.less";
-@dropdown-border-radius: @border-radius;
-@dropdown-padding: 10px;
-@dropdown-padding-right: 12px + 2 * @dropdown-padding;
+@import (reference) "~style/color.less";
+@import (reference) "~style/size.less";
 @zindex-dropdown: 3000;
 
 .km-dropdown {
@@ -149,7 +149,7 @@ export default {
 
   .km-input {
     width: 100%;
-    padding-right: @dropdown-padding-right;
+    padding-right: @input-padding-right;
     background: white;
   }
 
@@ -159,7 +159,7 @@ export default {
     height: 100%;
     left: 0;
     top: 0;
-    padding: 0 @dropdown-padding-right 0 @dropdown-padding;
+    padding: 0 @input-padding-right 0 @input-padding-left;
     white-space: nowrap;
     overflow: hidden;
 
@@ -180,17 +180,17 @@ export default {
   .km_dropdown_icon {
     position: absolute;
     height: 100%;
-    width: @dropdown-padding-right;
+    width: @input-padding-right;
     top: 0;
     right: 0;
     border: 1px solid @border-light;
     border-left: none;
-    border-radius: @dropdown-border-radius;
+    border-radius: @border-radius;
     text-align: center;
     font-size: 12px;
     background: white;
   }
-  &.km_dropdown_visible .km_dropdown_icon {
+  &.km_dropdown_active .km_dropdown_icon {
     border-color: @primary;
   }
 
@@ -200,15 +200,9 @@ export default {
     width: 100%;
     margin-top: 1px;
     border: 1px solid @border-light;
-    border-radius: @dropdown-border-radius;
+    border-radius: @border-radius;
     background: white;
     z-index: @zindex-dropdown;
-
-    .km_dropdown_load {
-      height: 100px;
-      line-height: 100px;
-      text-align: center;
-    }
   }
 }
 </style>

@@ -1,6 +1,6 @@
 <script>
-import {getProps, hasListener} from '../../vnode'
-import Bus from '../../bus'
+import {getProps, hasListener} from 'lib/vnode'
+import Bus from 'lib/bus'
 
 export default {
   props: {
@@ -15,22 +15,28 @@ export default {
     this.mHasSubmitEvent = !!hasListener(this.$vnode, 'submit')
     this.mHasInvalidEvent = !!hasListener(this.$vnode, 'invalid')
     // 收集 control 的错误信息
-    this.bus.$on('form.submit', () => {
+    this.bus.$on('form.check', () => {
       var checkers = this.bus.$emit('form.inner.check')
       return Promise.all(Array.isArray(checkers) ? checkers : [checkers]).then(errors => {
-        var errs = errors.filter(_ => _.error)
-        if (errs.length === 0) {
-          if (this.mHasSubmitEvent) {
-            return new Promise(resolve => {
-              this.$emit('submit', resolve)
-            })
-          }
+        errors = errors.filter(_ => _.error)
+        if (errors.length) {
+          this.mHasInvalidEvent && this.$emit('invalid', errors)
+          return false
         } else {
-          // 校验失败
-          if (this.mHasInvalidEvent) {
-            this.$emit('invalid', errs)
-          }
+          return true
         }
+      })
+    })
+
+    this.bus.$on('form.submit', () => {
+      return new Promise(resolve => {
+        this.bus.$emit('form.check').then(valid => {
+          if (valid) {
+            this.$emit('submit', resolve)
+          } else {
+            resolve()
+          }
+        })
       })
     })
 

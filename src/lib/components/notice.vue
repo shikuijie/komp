@@ -1,15 +1,15 @@
 <template>
-  <transition-group tag="ul" name="km-flash" class="km-flash">
-    <li class="km_flash_item" v-for="(msg, i) in messages" :key="i">
+  <transition-group tag="ul" name="km-notice" class="km-notice">
+    <li class="km_notice_item" v-for="(msg, i) in messages" :key="i">
       <slot :msg="msg">
-        <div class="km_flash_content" :class="`km_flash_${msg.success ? 'success' : 'fail'}`">{{msg.content}}</div>
+        <div class="km_notice_content" :class="`km_notice_${msg.success ? 'success' : 'fail'}`">{{msg.content}}</div>
       </slot>
     </li>
   </transition-group>
 </template>
 
 <script>
-import Bus from '../bus'
+import Bus from 'lib/bus'
 
 export default {
   props: {
@@ -33,42 +33,42 @@ export default {
     }
   },
   created () {
-    this.bus.$on('flash.success', item => {
+    this.bus.$on('notice.success', item => {
       this.pushItem(item, true)
     })
-    this.bus.$on('flash.fail', item => {
+    this.bus.$on('notice.fail', item => {
       this.pushItem(item, false)
     })
   },
   destroyed () {
-    this.bus.$off('flash.success')
-    this.bus.$off('flash.fail')
+    this.bus.$off('notice.success')
+    this.bus.$off('notice.fail')
   }
 }
 </script>
 
 <style lang="less">
-@import (reference) "../styles/color.less";
-@import (reference) "../styles/size.less";
+@import (reference) "~style/color.less";
+@import (reference) "~style/size.less";
 
-.km-flash-enter,
-.km-flash-leave-active {
+.km-notice-enter,
+.km-notice-leave-active {
   opacity: 0;
   transform: translateX(50%);
 }
-.km-flash-enter-active,
-.km-flash-leave-active {
+.km-notice-enter-active,
+.km-notice-leave-active {
   transition: all 1s;
 }
 
-.km-flash {
+.km-notice {
   position: fixed;
   bottom: 5px;
   right: 5px;
 
-  .km_flash_item {
+  .km_notice_item {
     margin-bottom: 5px;
-    .km_flash_content {
+    .km_notice_content {
       width: 200px;
       padding: 15px;
       border-radius: @border-radius;
@@ -76,10 +76,10 @@ export default {
       text-overflow: ellipsis;
       color: #fff;
 
-      &.km_flash_success {
+      &.km_notice_success {
         background: @primary;
       }
-      &.km_flash_fail {
+      &.km_notice_fail {
         background: @error;
       }
     }

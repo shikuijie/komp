@@ -1,5 +1,5 @@
 <script>
-import Bus from '../../bus'
+import Bus from 'lib/bus'
 
 export default {
   props: {
@@ -35,10 +35,13 @@ export default {
   },
   data () {
     return {
-      // Ship 打开时，可能需要通过异步请求来准备其数据
-      // null 表示 Ship 的数据需要从头通过异步请求来准备
-      // false 表示 Ship 的数据已经准备好了
-      // true 表示 Ship 的数据正在准备中
+      /**
+       * Ship 打开时，可能需要通过异步请求来准备其数据
+       * 如果用户再请求过程中多次打开Ship，都只能看到加载界面
+       * null  表示需要发送请求
+       * false 表示请求已经结束
+       * true  表示正在请求过程中
+       **/
       loading: null 
     }
   },

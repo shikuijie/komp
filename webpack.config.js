@@ -51,7 +51,9 @@ module.exports = {
   },
   resolve: {
     alias: {
-      'komp': path.join(__dirname, './src/lib'),
+      'lib': path.join(__dirname, './src/lib'),
+      'style': path.join(__dirname, './src/lib/styles'),
+      'komp': path.join(__dirname, './src/lib/components'),
       'vue$': 'vue/dist/vue.esm.js'
     }
   },

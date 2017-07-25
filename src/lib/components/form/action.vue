@@ -1,6 +1,6 @@
 <script>
-import {getAttrs} from '../../vnode'
-import Bus from '../../bus'
+import {getAttrs} from 'lib/vnode'
+import Bus from 'lib/bus'
 
 export default {
   name: 'km-form-action',

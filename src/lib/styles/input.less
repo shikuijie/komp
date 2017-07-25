@@ -1,17 +1,16 @@
-@import (reference) "../styles/color.less";
-@import (reference) "../styles/size.less";
+@import (reference) "~style/color.less";
+@import (reference) "~style/size.less";
 
 @input-border-color: @border-light;
 @input-bg-disabled: @bg-light;
 @input-height: 38px;
 @input-border-radius: @border-radius;
-@input-padding: 0 10px;
 
 .km-input {
   display: inline-block;
   height: @input-height;
   line-height: @input-height;
-  padding: @input-padding;
+  padding: 0 @input-padding-left;
 
   border: 1px solid @input-border-color;
   border-radius: @input-border-radius;

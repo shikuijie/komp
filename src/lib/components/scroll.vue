@@ -13,8 +13,8 @@
 </template>
 
 <script>
-  import Bus from '../bus'
-  import {isServer} from '../util'
+  import Bus from 'lib/bus'
+  import {isServer} from 'lib/util'
 
   const Scroll = {ctx: null, pos: 0, us: 'none'}
   if (!isServer()) {
@@ -226,7 +226,7 @@
 </script>
 
 <style lang="less">
-  @import (reference) '../styles/color.less';
+  @import (reference) "~style/color.less";
 
   .km-scroll {
     position: relative;
@@ -241,6 +241,7 @@
     .km_scroll_bar {
       position: absolute;
       background: rgba(0,0,0,.1);
+      z-index: 1;
 
       &.km_scroll_x {
         left: 0;

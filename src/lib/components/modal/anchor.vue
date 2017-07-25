@@ -1,5 +1,5 @@
 <script>
-import Bus from '../../bus'
+import Bus from 'lib/bus'
 
 export default {
   props: {
@@ -21,6 +21,8 @@ export default {
   },
   data () {
     return {
+      // 意义同Tip.Anchor的对应字段
+      // 参考 '../tip/anchor.vue'
       loading: null
     }
   },

@@ -4,27 +4,17 @@
 <template>
   <div id="app">
     <km-form class="km-inline" :bus="person.bus" @submit="onSubmitPersonInfo" @invalid="onPersonInvalid">
-      <km-form-control name="edu">
-        <km-select :clearable="true" v-model="person.info.edu" :expandable="true" :multiple="true">
-          <km-optgroup>
-            <div>自定义组</div>
-            <km-option label="Label1" value="Value1"><div>自定义标签</div></km-option>
-            <km-option label="Label2" value="Value2"></km-option>
-          </km-optgroup>
-          <km-optgroup label="组2">
-            <km-option label="Label3" value="Value3"></km-option>
-            <km-option label="Label4" value="Value4"></km-option>
-          </km-optgroup >
-          <km-optgroup label="组3">
-            <km-option label="Label5" value="Value5"></km-option>
-            <km-option label="Label6" value="Value6"></km-option>
-          </km-optgroup>
+      <km-form-control style="width:300px" name="edu">
+        <km-select :clearable="true" :multiple="false" placeholder="占位字符串" v-model="person.info.edu">
+          <km-optgrp :label="grp.label" v-for="grp in person.info.groups" :key="grp.label"> 
+            <km-option :label="opt.label" :value="opt.value" v-for="opt in grp.options" :key="opt.label"></km-option>
+          </km-optgrp>
         </km-select>
       </km-form-control>
-      <km-form-control name="age" :required="true" :number="true" @check="onCheckPersonAge">
+      <km-form-control style="width:200px" name="age" :required="true" :number="true" @check="onCheckPersonAge">
         <km-input v-model="person.info.age"></km-input>
       </km-form-control>
-      <km-form-control name="birthday" @check="onCheckPersonBirthday">
+      <km-form-control style="width:200px" name="birthday" @check="onCheckPersonBirthday">
         <km-datepicker :hastime="true" v-model="person.info.birthday"></km-datepicker>
       </km-form-control>
       <km-form-action>
@@ -41,7 +31,7 @@
       </template>
     </km-tip-ship>
 
-    <km-table-scroll :table="table" fixed="both" class="km-bordered">
+    <km-colfix-table :table="table" fixed="both" class="km-bordered">
       <km-tcell head="姓名" body="person.name"></km-tcell>
       <km-tcell head="联系方式" body="person.contact"></km-tcell>
       <km-tcell head="年龄" body="person.age"></km-tcell>
@@ -52,8 +42,7 @@
       <km-tcell head="联系方式" body="person.contact"></km-tcell>
       <km-tcell head="年龄" body="person.age"></km-tcell>
       <km-tcell head="职业" body="person.job"></km-tcell>
-    </km-table-scroll>
-    <button @click.stop="changeTable">改变表格</button>
+    </km-colfix-table>
 
     <km-modal-anchor :bus="modal.bus" :edata="{name: 'Shimoo'}">弹窗</km-modal-anchor>
     <km-modal-anchor :bus="modal.bus" :edata="{name: 'Shikuijie'}">弹窗2</km-modal-anchor>
@@ -65,14 +54,26 @@
       </template>
     </km-modal-ship>
 
-    <km-flash :bus="flash.bus"></km-flash>
+    <km-notice :bus="notice.bus"></km-notice>
     <button class="km-btn" @click.stop="notify">通知</button>
+
+    <km-suggest v-model="suggest.value" init-text="sdlkf" @textchange="onWriteSuggest" :multiple="false" :clearable="true">
+      <km-option v-for="sugg in suggest.items" :key="sugg.value" :label="sugg.label" :value="sugg.value"></km-option>
+    </km-suggest>
+
+    <km-select :cascaded="true">
+      <km-optgrp label="group1" value="grpval1">
+        <km-option value="value1" label="label1"></km-option>
+        <km-option value="value2" label="label2"></km-option>
+        <km-option value="value3" label="label3"></km-option>
+      </km-optgrp>
+    </km-select>
   </div>
 </template>
 
 <script>
 import Vue from 'vue'
-import {Bus} from 'komp'
+import {Bus} from 'lib'
 
 export default {
   data () {
@@ -83,7 +84,26 @@ export default {
         info: {
           edu: [],
           age: null,
-          birthday: null
+          birthday: null,
+          groups: [{
+            label: 'group1',
+            options: [{
+              label: 'label1',
+              value: {name: 'value1'}
+            }, {
+              label: 'label2',
+              value: {name: 'value2'}
+            }]
+          }, {
+            label: 'group2',
+            options: [{
+              label: 'label3',
+              value: {name: 'value3'}
+            }, {
+              label: 'label4',
+              value: {name: 'value4'}
+            }]
+          }]
         }
       },
       tip: {
@@ -113,8 +133,12 @@ export default {
       modal: {
         bus: new Bus()
       },
-      flash: {
+      notice: {
         bus: new Bus()
+      },
+      suggest: {
+        value: [],
+        items: []
       }
     }
   },
@@ -144,10 +168,8 @@ export default {
       }, 2000)
     },
     onPersonInvalid (errs) {
+      console.log(errs)
       alert('表单验证错误，请查看')
-    },
-    changeTable () {
-      this.table.showAge = !this.table.showAge
     },
     onShowTip ({resolve, eid}) {
       window.setTimeout(() => {
@@ -158,12 +180,24 @@ export default {
       console.log('show modal')
       window.setTimeout(() => {
         resolve(true)
-      }, 2000)
+      }, 500)
     },
 
     notify () {
       var success = Math.floor(Math.random() * 10) % 2
-      this.flash.bus.$emit( success ? 'flash.success' : 'flash.fail', success ? '成功了，真厉害' : '失败了，好挫啊')
+      this.notice.bus.$emit( success ? 'notice.success' : 'notice.fail', success ? '成功了，真厉害' : '失败了，好挫啊')
+    },
+    onWriteSuggest ({resolve, text}) {
+      window.setTimeout(() => {
+        this.suggest.items = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(() => {
+          var t = text + [1, 2, 3, 4, 5].map(() => 'abcdefghijklmnopqrstuvwxyz'[Math.floor(Math.random() * 26)]).join('')
+          return {
+            label: t,
+            value: t
+          }
+        })
+        resolve()
+      })
     }
   }
 }
@@ -190,5 +224,9 @@ export default {
       height: 80px;
     }
   }
+}
+
+.km-suggest .km-scroll {
+  max-height: 224px;
 }
 </style>
