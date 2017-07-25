@@ -10,7 +10,6 @@ export default {
   },
   props: {
     label: String,
-    value: null,
     topBus: Bus,
     modelValue: null,
     multiple: Boolean
