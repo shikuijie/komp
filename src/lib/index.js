@@ -17,15 +17,11 @@ import Tcell from 'komp/table/tcell.vue'
 import ModalShip from 'komp/modal/ship.vue'
 import ModalAnchor from 'komp/modal/anchor.vue'
 import Notice from 'komp/notice.vue'
-import Suggest from 'komp/select/suggest.vue'
 import Select from 'komp/select/select.vue'
 import Option from 'komp/select/option.vue'
-import Optgrp from 'komp/select/optgrp.vue'
 
 Vue.component('km-select', Select)
-Vue.component('km-suggest', Suggest)
 Vue.component('km-option', Option)
-Vue.component('km-optgrp', Optgrp)
 Vue.component('km-checkbox', Checkbox)
 Vue.component('km-scroll', Scroll)
 Vue.component('km-datepicker', Datepicker)

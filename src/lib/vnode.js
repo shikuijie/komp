@@ -17,6 +17,12 @@ export function getChildren (vnode) {
   return vnode.componentOptions.children
 }
 
+export function clearChildren (vnode) {
+  if (vnode.componentOptions && vnode.componentOptions.children) {
+    delete vnode.componentOptions.children
+  }
+}
+
 export function hasListener (vnode, event) {
   var options = vnode.componentOptions
   var listeners = options && options.listeners

@@ -68,7 +68,7 @@ export default {
       var fields = ['required', 'number', 'min', 'max', 'maxlength', 'email', 'phone', 'url', 'pattern']
       var err = null
       // 找到第一个校验不通过的验证项，校验出错时返回错误信息
-      for (let f of fields.filter(f => this[f])) {
+      for (let f of fields.filter(f => this[f] || this[f] === 0)) {
         err = this[`${f}Check`](val)
         if (err) {
           break

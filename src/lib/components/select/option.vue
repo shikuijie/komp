@@ -1,8 +1,11 @@
 <template>
-<li class="km-option" @click.stop="select">
-  <slot>
-    <div class="km_option_label">
-      <km-checkbox v-if="multiple" :nostop="true" :value="modelValue.indexOf(value) !== -1"></km-checkbox>{{label}}
+<li class="km-option" @click.stop="select" @mouseenter.stop="hover">
+  <slot :option="option" :leaf="leaf" :active="active" :onpath="onpath">
+    <div class="km-option-label">
+      <i class="km_option_circle" v-if="active && !multiple">
+      </i><checkbox v-if="multiple" :value="active" :nostop="true">
+      </checkbox><span>{{label}}
+      </span><i class="km_option_triangle" v-if="onpath && !leaf"></i>
     </div>
   </slot>
 </li>
@@ -10,54 +13,31 @@
 
 <script>
 import Bus from 'lib/bus'
+import Checkbox from 'komp/checkbox.vue'
+
 export default {
-  name: 'km-option',
+  components: {
+    Checkbox
+  },
   props: {
-    label: {
-      type: String,
-      required: true
-    },
-    value: {
-      required: true
-    },
-    topBus: Bus,
-    groupBus: Bus,
-    modelValue: null,
-    multiple: Boolean
+    bus: Bus,
+    option: Object,
+    label: String,
+    value: null,
+    leaf: Boolean,
+    active: Boolean,
+    onpath: Boolean,
+    multiple: Boolean,
+    cascaded: Boolean
   },
   methods: {
     select () {
-      if (this.multiple) {
-        let idx = this.modelValue.indexOf(this.value)
-        if (idx === -1) {
-          this.modelValue.push(this.value)
-        } else {
-          this.modelValue.splice(idx, 1)
-        }
-      } else {
-        this.topBus.$emit('option.change', this.label, this.value)
-      }
+      this.bus.$emit('option.select', this.option)
+    },
+    hover () {
+      this.bus.$emit('option.hover', this.option)
     }
-  },
-  created () {
-    this.topBus.$emit('option.add', this.label, this.value)
-    this.groupBus && this.groupBus.$emit('option.add', this.value)
-  },
-  destroyed () {
-    this.topBus.$emit('option.delete', this.value)
-    this.groupBus && this.groupBus.$emit('option.delete', this.value)
   }
 }
 </script>
 
-<style lang="less">
-@import (reference) "./style.less";
-
-.km-option {
-  display: inline-block;
-  width: 100%;
-  .km_option_label {
-    .define-option-style();
-  }
-}
-</style>

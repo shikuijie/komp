@@ -1,5 +1,5 @@
-import {getAttrs, getProps, cloneVnode} from '../../vnode'
-import {Type} from '../../util'
+import {getAttrs, getProps, cloneVnode} from 'lib/vnode'
+import {Type} from 'lib/util'
 
 // 生成表体的行
 export function getRow (h, columns, row) {

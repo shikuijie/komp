@@ -56,7 +56,14 @@
           return new Bus()
         }
       },
-      hidden: Boolean
+      hidden: Boolean,
+      direction: {
+        type: String,
+        default: 'both',
+        validator (val) {
+          return ['x', 'y', 'both'].indexOf(val) !== -1
+        }
+      }
     },
     data () {
       return {
@@ -117,6 +124,13 @@
           this.blockSize[dir] = this.mElSize[dir] * this.mElSize[dir] / this.mBodySize[dir]
           // scroll block 每滚动一个像素，scroll body 会滚动 unit 个像素
           this.unit[dir] = (this.mBodySize[dir] - this.mElSize[dir]) / (this.mElSize[dir] - this.blockSize[dir])
+        }
+
+        if (this.direction === 'y') {
+          this.noscroll.X = true
+        }
+        if (this.direction === 'x') {
+          this.noscroll.Y = true
         }
 
         if (init) {

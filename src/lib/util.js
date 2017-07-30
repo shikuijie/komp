@@ -17,3 +17,13 @@ export const Type = ['Number', 'String', 'Object', 'Date'].reduce((res, t) => {
     return typeof val === 'undefined'
   }
 })
+
+
+export function parseExpr (expr, ctx) {
+  try {
+    /*eslint-disable */
+    return new Function('ctx', `with(ctx) { return ${expr} }`)(ctx)
+    /*eslint-disable */
+  } catch (e) {
+  }
+}

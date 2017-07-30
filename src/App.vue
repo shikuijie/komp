@@ -5,11 +5,11 @@
   <div id="app">
     <km-form class="km-inline" :bus="person.bus" @submit="onSubmitPersonInfo" @invalid="onPersonInvalid">
       <km-form-control style="width:300px" name="edu">
-        <km-select :clearable="true" :multiple="false" placeholder="占位字符串" v-model="person.info.edu">
+        <!-- <km-select :clearable="true" :multiple="false" placeholder="占位字符串" v-model="person.info.edu">
           <km-optgrp :label="grp.label" v-for="grp in person.info.groups" :key="grp.label"> 
             <km-option :label="opt.label" :value="opt.value" v-for="opt in grp.options" :key="opt.label"></km-option>
           </km-optgrp>
-        </km-select>
+        </km-select> -->
       </km-form-control>
       <km-form-control style="width:200px" name="age" :required="true" :number="true" @check="onCheckPersonAge">
         <km-input v-model="person.info.age"></km-input>
@@ -57,16 +57,13 @@
     <km-notice :bus="notice.bus"></km-notice>
     <button class="km-btn" @click.stop="notify">通知</button>
 
-    <km-suggest v-model="suggest.value" init-text="sdlkf" @textchange="onWriteSuggest" :multiple="false" :clearable="true">
+    <!-- <km-suggest v-model="suggest.value" init-text="sdlkf" @textchange="onWriteSuggest" :multiple="false" :clearable="true">
       <km-option v-for="sugg in suggest.items" :key="sugg.value" :label="sugg.label" :value="sugg.value"></km-option>
-    </km-suggest>
+    </km-suggest> -->
 
-    <km-select :cascaded="true">
-      <km-optgrp label="group1" value="grpval1">
-        <km-option value="value1" label="label1"></km-option>
-        <km-option value="value2" label="label2"></km-option>
-        <km-option value="value3" label="label3"></km-option>
-      </km-optgrp>
+    <km-select v-model="cascade.value" style="width: 300px" @fetch="onAsyncFetch"
+      :option="cascade.option" :cascaded="true" :multiple="false">
+      <km-option></km-option>
     </km-select>
   </div>
 </template>
@@ -139,6 +136,12 @@ export default {
       suggest: {
         value: [],
         items: []
+      },
+      cascade: {
+        value: ['cascade1', 'cascade1-2', 'cascade1-2-1'],
+        option: {
+          children: []
+        }
       }
     }
   },
@@ -198,6 +201,51 @@ export default {
         })
         resolve()
       })
+    },
+
+    onAsyncFetch ({option, resolve}) {
+      window.setTimeout(() => {
+        if (!option.value) {
+          option.children = [{
+            label: '级联1', value: 'cascade1', children: []
+          }, {
+            label: '级联2', value: 'cascade2'
+          }, {
+            label: '级联3', value: 'cascade3'
+          }]
+        }
+
+        if (option.value === 'cascade1') {
+          option.children = [{
+            label: '级联1-1', value: 'cascade1-1'
+          }, {
+            label: '级联1-2', value: 'cascade1-2', children: []
+          }, {
+            label: '级联1-3', value: 'cascade1-3'
+          }]
+        }
+
+        if (option.value === 'cascade1-2') {
+          option.children = [{
+            label: '级联1-2-1', value: 'cascade1-2-1', children: []
+          }, {
+            label: '级联1-2-2', value: 'cascade1-2-2'
+          }, {
+            label: '级联1-2-3', value: 'cascade1-2-3'
+          }]
+        }
+
+        if (option.value === 'cascade1-2-1') {
+          option.children = [{
+            label: '级联1-2-1-1', value: 'cascade1-2-1-1'
+          }, {
+            label: '级联1-2-1-2', value: 'cascade1-2-1-2'
+          }, {
+            label: '级联1-2-1-3', value: 'cascade1-2-1-3'
+          }]
+        }
+        resolve()
+      }, 200)
     }
   }
 }
@@ -205,7 +253,11 @@ export default {
 
 <style lang="less">
 .km-select .km-scroll {
-  max-height: 200px;
+  max-height: 160px;
+
+  .km-option-list {
+    min-width: 120px;
+  }
 }
 
 .km-table {

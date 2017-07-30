@@ -5,6 +5,8 @@
 </template>
 
 <script>
+import {parseExpr} from 'lib/util'
+
 export default {
   props: {
     type: {
@@ -39,15 +41,6 @@ export default {
       var field = this[this.type]
       return parseExpr(field, this.row) || field
     }
-  }
-}
-
-function parseExpr (expr, ctx) {
-  try {
-    /*eslint-disable */
-    return new Function('ctx', `with(ctx) { return ${expr} }`)(ctx)
-    /*eslint-disable */
-  } catch (e) {
   }
 }
 </script>

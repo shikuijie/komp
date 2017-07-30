@@ -40,7 +40,6 @@ export default {
     'label', // 显示文本
     'readonly', // 文本框是否是只读的
     'disabled', // 文本框是否已经非能了
-    'clearable', // 文本框是否可以清空
     'placeholder', // 文本框占位字符串
     'loading' // 下拉框中的内容正在加载
   ],
@@ -59,7 +58,7 @@ export default {
   },
   computed: {
     removable () {
-      return !this.disabled && !this.loading && this.clearable && this.label
+      return !this.disabled && !this.loading && this.label
     },
     visible () {
       return this.active && !this.loading
