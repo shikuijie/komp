@@ -26,20 +26,11 @@ export default {
 
     // array of options
     option: {
+      // $label: field name of label
+      // $value: field name of value
+      // $children: field name of children
       type: Object,
       required: true
-    },
-    fnlbl: {
-      type: String,
-      default: 'label'
-    },
-    fnval: {
-      type: String,
-      default: 'value'
-    },
-    fnsub: {
-      type: String,
-      default: 'children'
     },
 
     // autocomplete
@@ -50,16 +41,26 @@ export default {
   },
   data () {
     return {
+      text: null,
       currentPath: []
     }
   },
   computed: {
+    flbl () {
+      return this.option.$label || 'label'
+    },
+    fval () {
+      return this.option.$value || 'value'
+    },
+    fsub () {
+      return this.option.$children || 'children'
+    },
     dataMap () {
       function transform (options, parent, map, level) {
         options.forEach(option => {
-          map.set(option[this.fnval], {parent, option, level})
+          map.set(option[this.fval], {parent, option, level})
 
-          var children = option[this.fnsub]
+          var children = option[this.fsub]
           children && transform.bind(this)(children, option, map, level + 1)
         })
 
@@ -77,7 +78,7 @@ export default {
       if (this.cascaded) {
         label = this.value.reduce((res, val) => {
           var data = this.dataMap.get(val)
-          data && res.push(data.option[this.fnlbl])
+          data && res.push(data.option[this.flbl])
           return res
         }, []).join('/')
       }
@@ -85,31 +86,38 @@ export default {
       return label
     },
     sublist () {
-      return this.option[this.fnsub] || []
+      return this.option[this.fsub] || []
+    }
+  },
+  watch: {
+    labelStr (val) {
+      if (this.editable) {
+        this.text = val
+      }
     }
   },
   methods: {
     isActive (option) {
-      var children = option[this.fnsub]
+      var children = option[this.fsub]
       if (this.multiple) {
         if (!children) {
-          return this.value.indexOf(option[this.fnval]) !== -1
+          return this.value.indexOf(option[this.fval]) !== -1
         } else {
           return children.every(child => this.isActive(child))
         }
       } else if (this.cascaded) {
-        return this.value.indexOf(option[this.fnval]) !== -1
+        return this.value.indexOf(option[this.fval]) !== -1
       } else {
-        return this.value === option[this.fnval]
+        return this.value === option[this.fval]
       }
     },
     select (option) {
       if (this.multiple) {
-        let children = option[this.fnsub]
+        let children = option[this.fsub]
         if (!children) {
-          let idx = this.value.indexOf(option[this.fnval])
+          let idx = this.value.indexOf(option[this.fval])
           if (idx === -1) {
-            this.value.push(option[this.fnval])
+            this.value.push(option[this.fval])
           } else {
             this.value.splice(idx, 1)
           }
@@ -117,19 +125,22 @@ export default {
           children.forEach(this.select)
         }
       } else if (this.cascaded) {
-        let val = option[this.fnval]
+        let val = option[this.fval]
         let data = this.dataMap.get(val)
         let vals = [val]
         while (data.level > 1) {
-          data = this.dataMap.get(data.parent[this.fnval])
-          vals.unshift(data.option[this.fnval])
+          data = this.dataMap.get(data.parent[this.fval])
+          vals.unshift(data.option[this.fval])
         }
         this.value.splice(0, this.value.length, ...vals)
         this.bus.$emit('dropdown.hide')
       } else {
-        this.$emit('input', option[this.fnval])
+        this.$emit('input', option[this.fval])
         this.bus.$emit('dropdown.hide')
       }
+
+      console.log(this.value)
+      this.$emit('change', this.value)
     },
     clear (val) {
       if (this.multiple && val) {
@@ -139,6 +150,63 @@ export default {
       } else {
         this.$emit('input', null)
       }
+      this.$emit('change', this.value)
+    },
+    onEdit ($event) {
+      this.text = $event.target.value
+      if (this.mEditing) {
+        return
+      }
+
+      var text = this.text
+      if (this.mTimeHandle) {
+        window.clearTimeout(this.mTimeHandle)
+      }
+      this.mTimeHandle = window.setTimeout(() => {
+        this.mTimeHandle = null
+        this.editHandler(text)
+      }, 800)
+    },
+    editDone (text) {
+      if (this.mPrevText && this.mPrevText !== text) {
+        this.editHandler(this.mPrevText)
+      }
+    },
+    editHandler (text) {
+      if (this.mFetching) {
+        this.mPrevText = text
+        return
+      }
+
+      var option = {[this.fsub]: []}
+      var currentPath = []
+      this.fetch({option, text, currentPath}).then(
+        () => {
+          this.option[this.fsub] = option[this.fsub]
+          this.currentPath = currentPath
+          this.editDone(text)
+        },
+        () => this.editDone(text)
+      )
+    },
+    getEditor (h) {
+      return this.editable ? [
+        h('input', {
+          slot: 'label', ref: 'input',
+          attrs: {type: 'text', placeholder: this.placeholder},
+          domProps: {value: this.text},
+          on: {
+            click: () => {
+              if (this.text && !this.option[this.fsub].length) {
+                this.editHandler(this.text)
+              }
+            },
+            input: this.onEdit,
+            compositionstart: () => this.mEditing = true,
+            compositionend: () => this.mEditing = false
+          }
+        })
+      ] : []
     },
     getDropdownData () {
       return {
@@ -165,7 +233,7 @@ export default {
         }, this.value.reduce((res, val) => {
           var data = this.dataMap.get(val)
           data && res.push(h('li', [
-            this.dataMap.get(val).option[this.fnlbl],
+            this.dataMap.get(val).option[this.flbl],
             h('i', {
               staticClass: 'km-pointer icon-close-small',
               on: {
@@ -188,8 +256,8 @@ export default {
 
       var path = []
       for (let opt of this.currentPath) {
-        let parent = this.dataMap.get(opt[this.fnval]).parent
-        let children = parent[this.fnsub]
+        let parent = this.dataMap.get(opt[this.fval]).parent
+        let children = parent[this.fsub]
         if (children && children.length) {
           path.push(children)
         } else {
@@ -215,9 +283,9 @@ export default {
               props: {
                 bus: this.bus,
                 option: opt,
-                label: opt[this.fnlbl],
-                value: opt[this.fnval],
-                leaf: !opt[this.fnsub],
+                label: opt[this.flbl],
+                value: opt[this.fval],
+                leaf: !opt[this.fsub],
                 multiple: this.multiple,
                 cascaded: this.cascaded,
                 active: this.isActive(opt),
@@ -229,50 +297,58 @@ export default {
         ])
       ]))
     },
-    fetch (option, path) {
-      if (!option[this.fnsub]) {
+    fetch ({option, cascadedValues, text, currentPath}) {
+      if (!option[this.fsub]) {
         return // leaf: no need to fetch children
       } else {
-        while (option[this.fnsub].length) {
-          let val = path && path.shift()
-          option = option[this.fnsub].find(opt => opt[this.fnval] === val || Type.isUndefined(val))
-          this.currentPath.push(option)
-          if (!option[this.fnsub]) {
+        while (option[this.fsub].length) {
+          let val = cascadedValues && cascadedValues.shift()
+          option = option[this.fsub].find(opt => Type.isUndefined(val) || opt[this.fval] === val)
+          currentPath.push(option)
+          if (!option[this.fsub]) {
             return // leaf: no need to fetch children
           }
         }
 
         // fetch children
-        new Promise(resolve => {
+        this.mFetching = true
+        return new Promise(resolve => {
           if (this.mHasFetchEvent) {
-            this.$emit('fetch', {option, resolve})
+            this.$emit('fetch', {option, text, resolve})
           } else {
             resolve()
           }
         }).then(() => {
-          var val = path && path.shift()
-          var next = option[this.fnsub].find(opt => opt[this.fnval] === val || Type.isUndefined(val))
+          this.mFetching = false
+          var val = cascadedValues && cascadedValues.shift()
+          var next = option[this.fsub].find(opt => Type.isUndefined(val) || opt[this.fval] === val)
           if (next) {
-            this.currentPath.push(next)
-            this.fetch(next, path)
+            currentPath.push(next)
+            return this.fetch({option: next, cascadedValues, text, currentPath})
           }
+        }, () => {
+          this.mFetching = false
         })
       }
     }
   },
   render (h) {
-    var slot = this.$slots.default[0]
     var data = this.getDropdownData()
+    var editor = this.getEditor(h)
     var labels = this.getDropdownLabels(h)
-    var list = this.getDropdownList(h, slot)
-    return h(Dropdown, data, labels.concat(list))
+    var list = this.getDropdownList(h)
+    return h(Dropdown, data, [
+      ...editor,
+      ...labels,
+      ...list
+    ])
   },
   created () {
     // define an async event to fetch next level of options
     this.mHasFetchEvent = hasListener(this.$vnode, 'fetch')
 
     if (!this.sublist) {
-      throw new Error(`Select options must have an Array field: ${this.fnsub}`)
+      throw new Error(`Select options must have an Array field: ${this.fsub}`)
     }
 
     if ((this.cascaded || this.multiple) && !Array.isArray(this.value)) {
@@ -280,25 +356,22 @@ export default {
     }
 
     this.bus.$on('option.select', this.select)
-
     this.bus.$on('option.hover', option => {
-      if (this.currentPath.indexOf(option) !== -1) {
+      if (this.currentPath.indexOf(option) !== -1 || this.mFetching) {
         return
       }
-      var idx = this.dataMap.get(option[this.fnval]).level - 1
+      var idx = this.dataMap.get(option[this.fval]).level - 1
       this.currentPath.splice(idx, this.currentPath.length - idx, option)
-      this.fetch(option)
+      this.fetch({option, currentPath: this.currentPath})
     })
   },
   mounted () {
-    var path = this.cascaded ? this.value.slice() : undefined
-    this.fetch(this.option, path)
+    var cascadedValues = this.cascaded ? this.value.slice() : undefined
+    this.fetch({option: this.option, cascadedValues, currentPath: this.currentPath})
   },
   destroyed () {
-    this.bus.$off('single.select')
-    this.bus.$off('multiple.select')
-    this.bus.$off('cascade.select')
-    this.bus.$off('cascade.hover')
+    this.bus.$off('option.select')
+    this.bus.$off('option.hover')
   }
 }
 </script>

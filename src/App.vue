@@ -61,9 +61,9 @@
       <km-option v-for="sugg in suggest.items" :key="sugg.value" :label="sugg.label" :value="sugg.value"></km-option>
     </km-suggest> -->
 
-    <km-select v-model="cascade.value" style="width: 300px" @fetch="onAsyncFetch"
-      :option="cascade.option" :cascaded="true" :multiple="false">
-      <km-option></km-option>
+    <km-select v-model="cascade.value" style="width: 300px"
+      @fetch="onAsyncFetch" @change="onChangeSelect"
+      :option="cascade.option" :cascaded="true" :editable="true" :multiple="false">
     </km-select>
   </div>
 </template>
@@ -147,6 +147,7 @@ export default {
   },
   methods: {
     onChangeSelect (val) {
+      console.log(val)
     },
     onChangeSuggest (val) {
       console.log(val)
