@@ -63,7 +63,7 @@
 
     <km-select v-model="cascade.value" style="width: 300px"
       @fetch="onAsyncFetch" @change="onChangeSelect"
-      :option="cascade.option" :cascaded="true" :editable="true" :multiple="false">
+      :option="cascade.option" :cascaded="false" :editable="false" :multiple="false">
     </km-select>
   </div>
 </template>
