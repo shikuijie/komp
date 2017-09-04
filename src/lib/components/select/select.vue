@@ -139,7 +139,6 @@ export default {
         this.bus.$emit('dropdown.hide')
       }
 
-      console.log(this.value)
       this.$emit('change', this.value)
     },
     clear (val) {

@@ -1,6 +1,6 @@
 <script>
 import {getProps} from 'lib/vnode'
-import {getHead, getRow, getMRow, getFoot, getWrappers} from './tool'
+import {getHead, getRow, getMRow, getFoot, getWrappers} from './util'
 
 export default {
   props: {

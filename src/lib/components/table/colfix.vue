@@ -2,7 +2,7 @@
 import kmTable from './table.vue'
 import Scroll from 'komp/scroll.vue'
 import Bus from 'lib/bus'
-import {getWrappers} from './tool'
+import {getWrappers} from './util'
 import {cloneVnode} from 'lib/vnode'
 
 export default {
