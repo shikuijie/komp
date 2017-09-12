@@ -142,7 +142,10 @@ export default {
     })
 
     return h('div', {
-      staticClass: 'km-form-control'
+      staticClass: 'km-form-control',
+      class: {
+        km_error: this.error
+      }
     }, [
       ...slots,
       h('div', {
@@ -159,14 +162,15 @@ export default {
 </script>
 
 <style lang="less">
+@import (reference) "~style/color.less";
+
 .km-form-control {
   position: relative;
   &.km-inline {
     display: inline-block;
   }
-
-  .km_control {
-    width: 100%;
+  &.km_error .km-input {
+    border-color: @error;
   }
 
   .km_control_error {

@@ -33,10 +33,11 @@ export default {
       required: true
     },
 
-    // autocomplete
+    // suggestion select
     editable: Boolean,
-    // able to select more than one leaf options
+    // multiple select
     multiple: Boolean,
+    // cascaded select
     cascaded: Boolean
   },
   data () {
@@ -58,7 +59,9 @@ export default {
     dataMap () {
       function transform (options, parent, map, level) {
         options.forEach(option => {
-          map.set(option[this.fval], {parent, option, level})
+          map.set(option[this.fval], {
+            parent, option, level
+          })
 
           var children = option[this.fsub]
           children && transform.bind(this)(children, option, map, level + 1)
@@ -103,7 +106,7 @@ export default {
         if (!children) {
           return this.value.indexOf(option[this.fval]) !== -1
         } else {
-          return children.every(child => this.isActive(child))
+          return !!children.length && children.every(child => this.isActive(child))
         }
       } else if (this.cascaded) {
         return this.value.indexOf(option[this.fval]) !== -1
@@ -111,35 +114,40 @@ export default {
         return this.value === option[this.fval]
       }
     },
+    mselect (option) {
+      var children = option[this.fsub]
+      if (!children) {
+        let idx = this.value.indexOf(option[this.fval])
+        if (idx === -1) {
+          this.value.push(option[this.fval])
+        } else {
+          this.value.splice(idx, 1)
+        }
+      } else {
+        children.forEach(this.mselect)
+      }
+    },
     select (option) {
       if (this.multiple) {
-        let children = option[this.fsub]
-        if (!children) {
-          let idx = this.value.indexOf(option[this.fval])
-          if (idx === -1) {
-            this.value.push(option[this.fval])
-          } else {
-            this.value.splice(idx, 1)
-          }
-        } else {
-          children.forEach(this.select)
-        }
-      } else if (this.cascaded) {
-        let val = option[this.fval]
-        let data = this.dataMap.get(val)
-        let vals = [val]
-        while (data.level > 1) {
-          data = this.dataMap.get(data.parent[this.fval])
-          vals.unshift(data.option[this.fval])
-        }
-        this.value.splice(0, this.value.length, ...vals)
-        this.bus.$emit('dropdown.hide')
+        this.mselect(option)
+        this.$emit('change', this.value)
       } else {
-        this.$emit('input', option[this.fval])
+        let val = option[this.fval]
+        if (this.cascaded) {
+          let data = this.dataMap.get(val)
+          let vals = [val]
+          while (data.level > 1) {
+            data = this.dataMap.get(data.parent[this.fval])
+            vals.unshift(data.option[this.fval])
+          }
+          this.value.splice(0, this.value.length, ...vals)
+          this.$emit('change', this.value)
+        } else {
+          this.$emit('input', val)
+          this.$emit('change', val)
+        }
         this.bus.$emit('dropdown.hide')
       }
-
-      this.$emit('change', this.value)
     },
     clear (val) {
       if (this.multiple && val) {
@@ -265,7 +273,7 @@ export default {
       }
 
       return path.map((options, i) => h('div', {
-        staticClass: 'km_option_list'
+        staticClass: 'km-option-list'
       }, [
         h(Scroll, {
           key: options.map(opt => opt[this.label]).join('/'),
@@ -275,9 +283,7 @@ export default {
             direction: 'y'
           }
         }, [
-          h('ul', {
-            staticClass: `km-option-list km-option-level${i}`,
-          }, options.map(opt => {
+          h('ul', options.map(opt => {
             return h(SelectOption, {
               props: {
                 bus: this.bus,
@@ -361,7 +367,7 @@ export default {
       }
       var idx = this.dataMap.get(option[this.fval]).level - 1
       this.currentPath.splice(idx, this.currentPath.length - idx, option)
-      this.fetch({option, currentPath: this.currentPath})
+      this.fetch({option, currentPath: this.currentPath, text: this.text})
     })
   },
   mounted () {
@@ -382,25 +388,16 @@ export default {
 @select-padding-left: 14px;
 @select-height: 32px;
 
-.km-suggest,
 .km-select {
   &.km_multiple {
     .km_label_list {
-      position: absolute;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      top: 0;
-      padding: 0 @input-padding-right 0 @input-padding-left;
-      white-space: nowrap;
-      overflow: hidden;
-
       li {
-        display: inline;
+        display: inline-block;
         border: 1px solid @border-light;
-        padding: 2px;
-        margin-right: 5px;
+        padding: 5px;
+        margin: 3px;
         border-radius: @border-radius;
+        line-height: 1.333;
         cursor: default;
 
         i {
@@ -410,58 +407,47 @@ export default {
     }
   }
 
-  .km-optgrp {
-    &:not(.km_optgrp_multiple) .km_label:hover {
-      background: transparent;
-      color: inherit;
-    }
-  }
-
-  .km-optgrp .km-option .km_label {
-    padding-left: @select-padding-left * 2;
-  }
-
   .km-option {
+    position: relative;
+
     .km-option-label {
-      position: relative;
       height: @select-height;
       padding-left: @select-padding-left;
       line-height: @select-height;
+
+      &.km_option_active {
+        color: @primary;
+      }
 
       &:hover {
         background: @bg-light;
         color: @primary;
         cursor: default;
       }
+    }
 
-      i.km_option_circle {
-        position: absolute;
-        top: 50%;
-        left: 5px;
-        transform: translateY(-2px);
-        border: 2px solid @primary;
-        border-radius: 2px;
-      }
-      i.km_option_triangle {
-        position: absolute;
-        top: 50%;
-        right: 5px;
-        border: 4px solid transparent;
-        border-left-color: inherit;
-        transform: translateY(-4px);
-      }
+    i.km-option-caret {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      top: 50%;
+      right: 0;
+      border: 1px solid @border-light;
+      transform: translate(6px, -5px) rotateZ(45deg);
+      background: white;
     }
   }
 
-  .km-dropdown-frame {
+  .km-dropdown-list {
     display: table;
+    table-layout:fixed;
     width: auto;
     min-width: 100%;
 
-    .km_option_list {
+    .km-option-list {
       display: table-cell;
-      &:not(:first-child) {
-        border-left: 1px solid @border-slight;
+      &:not(:last-child) .km-option {
+        border-right: 1px solid @border-light;
       }
     }
   }

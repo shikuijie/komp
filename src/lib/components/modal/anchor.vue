@@ -23,7 +23,7 @@ export default {
     return {
       // 意义同Tip.Anchor的对应字段
       // 参考 '../tip/anchor.vue'
-      loading: null
+      status: null
     }
   },
   render (h) {

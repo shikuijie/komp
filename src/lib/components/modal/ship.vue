@@ -32,7 +32,7 @@ export default {
   computed: {
     loading () {
       var ctx = this.eid && this.bus.mCtxMap && this.bus.mCtxMap.get(this.eid)
-      return ctx && ctx.loading
+      return ctx && (ctx.status === 'loading')
     }
   },
   methods: {
@@ -52,8 +52,8 @@ export default {
       if (!ctx) {
         throw new Error('Modal Anchor EID corresponds to no Anchor Component')
       }
-      if (ctx.loading === null) {
-        ctx.loading = true
+      if (ctx.status === null) {
+        ctx.status = 'loading'
         new Promise(resolve => {
           if (this.mHasShowEvent) {
             this.$emit('show', {resolve, eid, edata})
@@ -61,7 +61,7 @@ export default {
             resolve()
           }
         }).then(() => {
-          ctx.loading = false
+          ctx.status = 'done'
         })
       }
 
@@ -76,10 +76,12 @@ export default {
       if (!ctx) {
         throw new Error('Modal Anchor EID corresponds to no Anchor Component')
       }
-      if (ctx.loading === false) {
-        ctx.loading = null
-        this.$emit('hide', {eid, edata})
+
+      if (ctx.status === 'loading') {
+        return
       }
+      ctx.status = null
+      this.$emit('hide', {eid, edata})
     }
   },
   created () {

@@ -57,10 +57,6 @@
     <km-notice :bus="notice.bus"></km-notice>
     <button class="km-btn" @click.stop="notify">通知</button>
 
-    <!-- <km-suggest v-model="suggest.value" init-text="sdlkf" @textchange="onWriteSuggest" :multiple="false" :clearable="true">
-      <km-option v-for="sugg in suggest.items" :key="sugg.value" :label="sugg.label" :value="sugg.value"></km-option>
-    </km-suggest> -->
-
     <km-select v-model="cascade.value" style="width: 300px"
       @fetch="onAsyncFetch" @change="onChangeSelect"
       :option="cascade.option" :cascaded="false" :editable="false" :multiple="false">
@@ -133,12 +129,8 @@ export default {
       notice: {
         bus: new Bus()
       },
-      suggest: {
-        value: [],
-        items: []
-      },
       cascade: {
-        value: ['cascade1', 'cascade1-2', 'cascade1-2-1'],
+        value: [],
         option: {
           children: []
         }
@@ -204,7 +196,7 @@ export default {
       })
     },
 
-    onAsyncFetch ({option, resolve}) {
+    onAsyncFetch ({option, text, resolve}) {
       window.setTimeout(() => {
         if (!option.value) {
           option.children = [{
@@ -253,11 +245,12 @@ export default {
 </script>
 
 <style lang="less">
-.km-select .km-scroll {
-  max-height: 160px;
-
+.km-select {
   .km-option-list {
     min-width: 120px;
+    .km-scroll {
+      max-height: 160px;
+    }
   }
 }
 
@@ -277,9 +270,5 @@ export default {
       height: 80px;
     }
   }
-}
-
-.km-suggest .km-scroll {
-  max-height: 224px;
 }
 </style>

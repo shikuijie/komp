@@ -291,11 +291,11 @@ function getLastDay (y, m) {
   line-height: normal;
   cursor: default;
 
-  .km-dropdown-frame {
+  .km-dropdown-list {
     width: 267px;
   }
 
-  &.km_date_time .km-dropdown-frame {
+  &.km_date_time .km-dropdown-list {
     width: 342px;
   }
 

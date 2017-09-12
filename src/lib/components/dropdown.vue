@@ -1,13 +1,15 @@
 <template>
 <div class="km-dropdown" @click.stop="() => {}"
   :class="{km_dropdown_visible: visible, km_dropdown_active: active}">
-  <div class="km-input" @click.stop="toggle" :class="{'km-disabled': disabled, 'km-focus': active}">
-    <!-- 显示一个文本 -->
-    <input type="text" v-if="readonly" :readonly="true" 
-          :placeholder="placeholder" :value="label">
-
+  <div class="km-dropdown-frame" @click.stop="toggle">
     <!-- label slot  -->
-    <slot name="label"></slot>
+    <slot name="label">
+      <!-- 默认是一个输入框 -->
+      <div class="km-input" :class="{'km-disabled': disabled, 'km-focus': active}">
+        <input type="text" :readonly="readonly" 
+              :placeholder="placeholder" :value="label">
+      </div>
+    </slot>
 
     <!-- 箭头指示图标和清除图标 -->
     <div class="km_dropdown_icon">
@@ -16,7 +18,7 @@
     </div>
   </div>
   <!-- 下拉框内容区域 -->
-  <div class="km-dropdown-frame" ref="body" :style="bodyPosition">
+  <div class="km-dropdown-list" ref="body" :style="bodyPosition">
     <slot></slot>
   </div>
 </div>
@@ -146,54 +148,39 @@ export default {
     overflow: visible;
   }
 
-  .km-input {
+  .km-dropdown-frame {
+    display: table;
+    table-layout: fixed;
     width: 100%;
-    padding-right: @input-padding-right;
+    height: 38px;
+    border: 1px solid @border-light;
+    border-radius: @border-radius;
     background: white;
-  }
 
-  .km_dropdown_labels {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    left: 0;
-    top: 0;
-    padding: 0 @input-padding-right 0 @input-padding-left;
-    white-space: nowrap;
-    overflow: hidden;
+    > * {
+      display: table-cell;
+      vertical-align: middle;
+    }
 
-    li {
-      display: inline;
-      border: 1px solid @border-light;
-      padding: 2px;
-      margin-right: 5px;
-      border-radius: @border-radius;
-      cursor: default;
+    .km-input {
+      border: none;
+      border-radius: 0;
+      padding-right: 0;
+      background: none;
+    }
 
-      i {
-        font-size: 12px;
-      }
+    .km_dropdown_icon {
+      width: @input-padding-right;
+      text-align: center;
+      font-size: 12px;
     }
   }
 
-  .km_dropdown_icon {
-    position: absolute;
-    height: 100%;
-    width: @input-padding-right;
-    top: 0;
-    right: 0;
-    border: 1px solid @border-light;
-    border-left: none;
-    border-radius: @border-radius;
-    text-align: center;
-    font-size: 12px;
-    background: white;
-  }
-  &.km_dropdown_active .km_dropdown_icon {
+  &.km_dropdown_active .km-dropdown-frame {
     border-color: @primary;
   }
 
-  .km-dropdown-frame {
+  .km-dropdown-list {
     position: absolute;
     top: 100%;
     width: 100%;

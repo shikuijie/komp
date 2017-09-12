@@ -1,13 +1,12 @@
 <template>
-<li class="km-option" @click.stop="select" @mouseenter.stop="hover">
+<li class="km-option" @click.stop="select" @mouseleave.stop="moveOut" @mouseenter.stop="moveIn">
   <slot :option="option" :leaf="leaf" :active="active" :onpath="onpath">
-    <div class="km-option-label">
-      <i class="km_option_circle" v-if="active && !multiple">
-      </i><checkbox v-if="multiple" :value="active" :nostop="true">
-      </checkbox><span>{{label}}
-      </span><i class="km_option_triangle" v-if="onpath && !leaf"></i>
+    <div class="km-option-label" :class="{km_option_active: active}">
+      <checkbox v-if="multiple" :value="active" :nostop="true">
+      </checkbox><span>{{label}}</span>
     </div>
   </slot>
+  <i class="km-option-caret" v-if="onpath && !leaf"></i>
 </li>
 </template>
 
@@ -34,8 +33,16 @@ export default {
     select () {
       this.bus.$emit('option.select', this.option)
     },
-    hover () {
-      this.bus.$emit('option.hover', this.option)
+    moveIn () {
+      this.mTimeHandler = window.setTimeout(() => {
+        this.bus.$emit('option.hover', this.option)
+      }, 350)
+    },
+    moveOut () {
+      if (this.mTimeHandler) {
+        window.clearTimeout(this.mTimeHandler)
+        this.mTimeHandler = null
+      }
     }
   }
 }

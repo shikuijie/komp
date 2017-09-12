@@ -1,5 +1,5 @@
 <template>
-<div class="km-input" :class="{'km-disabled': disabled, 'km-focus': active, km_control: !!controlBus}">
+<div class="km-input km_input" :class="{'km-disabled': disabled, 'km-focus': active, km_control: !!controlBus}">
   <input type="text" v-model="text"
          :readonly="disabled" :placeholder="placeholder" 
          @blur.stop="onBlur" @focus.stop="active = true">
@@ -49,3 +49,10 @@ export default {
   }
 }
 </script>
+
+<style lang="less">
+.km-input.km_input {
+  height: 38px;
+  line-height: 38px;
+}
+</style>

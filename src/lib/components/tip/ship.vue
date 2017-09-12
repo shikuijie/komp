@@ -52,7 +52,7 @@ export default {
   computed: {
     loading () {
       var ctx = this.eid && this.bus.mCtxMap && this.bus.mCtxMap.get(this.eid)
-      return ctx && ctx.loading
+      return ctx && (ctx.status === 'loading')
     }
   },
   methods: {
@@ -159,8 +159,8 @@ export default {
       this.eid = eid
       this.edata = edata
 
-      if (ctx.loading === null) {
-        ctx.loading = true
+      if (ctx.status === null) {
+        ctx.status = 'loading'
         new Promise(resolve => {
           if (this.mHasShowEvent) {
             this.$emit('show', {resolve, eid, edata})
@@ -168,7 +168,7 @@ export default {
             resolve()
           }
         }).then(() => {
-          ctx.loading = false
+          ctx.status = 'done'
         })
       }
       Vue.nextTick(() => this.show(ctx))
@@ -190,10 +190,11 @@ export default {
       this.edata = null
 
       // 如果当前 Anchor 正在加载数据，则不发送 hide 事件
-      if (ctx.loading === false) {
-        ctx.loading = null
-        this.$emit('hide', {eid, edata})
+      if (ctx.status === 'loading') {
+        return
       }
+      ctx.status = null
+      this.$emit('hide', {eid, edata})
     })
 
     this.bus.$on('tip.toggle', (eid, edata) => {
