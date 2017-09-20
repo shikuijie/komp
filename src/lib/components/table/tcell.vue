@@ -1,11 +1,11 @@
 <template>
 <div :is="tag" class="km-tcell">
-  <slot :row="row" :name="type">{{content}}</slot>
+  <slot :row="row" :table="table" :name="type">{{content}}</slot>
 </div>
 </template>
 
 <script>
-import {parseExpr} from 'lib/util'
+import {parseExpr, Type} from 'lib/util'
 
 export default {
   props: {
@@ -21,8 +21,9 @@ export default {
         return {}
       }
     },
+    table: Object,
     head: String,
-    foot: String,
+    foot: Function | String,
     body: String
   },
   computed: {
@@ -39,7 +40,23 @@ export default {
     },
     content () {
       var field = this[this.type]
+      if (this.type === 'foot' && Type.isFunction(field)) {
+        return field(this.table.tbody.reduce((res, row) => {
+          collect(row, this.body, res)
+          return res
+        }, []), this.row)
+      }
       return parseExpr(field, this.row) || field
+
+      function collect (obj, f, res) {
+        var i = f.indexOf('[]')
+        if (i !== -1) {
+          var arr = parseExpr(f.slice(0, i), obj)
+          arr && arr.forEach(item => collect(item, f.slice(i + 2), res))
+        } else {
+          res.push(f ? parseExpr(f, obj) : obj)
+        }
+      }
     }
   }
 }

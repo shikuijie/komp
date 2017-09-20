@@ -2,22 +2,31 @@ import {getAttrs, getProps, cloneVnode} from 'lib/vnode'
 import {Type} from 'lib/util'
 
 // 生成表体的行
-export function getRow (h, columns, row) {
-  return h('tr', columns.map(s => {
+export function getRow (h, columns, row, table, col) {
+  var colUndf = Type.isUndefined(col)
+
+  return h('tr', columns.reduce((res, s, i) => {
+    if (!colUndf && col !== i) {
+      return res
+    }
+
     var node = cloneVnode(s)
     var props = getProps(node)
     props.type = 'body'
     props.row = row
+    props.table = table
 
     var attrs = getAttrs(node)
     delete attrs.colspan
     delete attrs.rowspan
 
-    return node
-  }))
+    res.push(node)
+    return res
+  }, []))
 }
 
-export function getMRow (h, columns, bodyKeys, row) {
+export function getMRow (h, columns, bodyKeys, row, table, col) {
+  var colUndf = Type.isUndefined(col)
   var [fields, spans] = parseMRow(row, bodyKeys.filter(_ => _))
 
   // 未指定 body 属性的 Tcell 的 rowspan 应该是 spans[0] 的最大值
@@ -30,6 +39,10 @@ export function getMRow (h, columns, bodyKeys, row) {
   }, { count: 0 })
 
   return fields.map((_, rownum) => h('tr', columns.reduce((res, s, i) => {
+    if (!colUndf && col !== i) {
+      return res
+    }
+
     var node = null
     var field = bodyKeys[i]
     var span = 1
@@ -51,6 +64,7 @@ export function getMRow (h, columns, bodyKeys, row) {
     }
 
     var [attrs, props] = [getAttrs(node), getProps(node)]
+    props.table = table
     props.row = row
     props.type = 'body'
 
@@ -69,9 +83,11 @@ export function getMRow (h, columns, bodyKeys, row) {
 }
 
 // 生成表头
-export function getHead (h, wrappers, row) {
-  return h('thead', wrappers.map((rowCells, i) => h('tr', rowCells.reduce((res, wrapper) => {
-    if (!wrapper.render) {
+export function getHead (h, wrappers, row, table, col) {
+  var colUndf = Type.isUndefined(col)
+
+  return h('thead', wrappers.map((rowCells, i) => h('tr', rowCells.reduce((res, wrapper, c) => {
+    if (!wrapper.render || (!colUndf && c !== col)) {
       return res
     }
 
@@ -79,6 +95,7 @@ export function getHead (h, wrappers, row) {
     var props = getProps(node)
     props.type = 'head'
     props.row = row
+    props.table = table
 
     var spans = {}
     var attrs = getAttrs(node)
@@ -101,15 +118,24 @@ export function getHead (h, wrappers, row) {
 }
 
 // 生成表尾
-export function getFoot (h, columns, row) {
+export function getFoot (h, columns, row, table, col) {
+  var colUndf = Type.isUndefined(col)
+
   return h('tfoot', [
-    h('tr', columns.map(s => {
+    h('tr', columns.reduce((res, s, i) => {
+      if (!colUndf && col !== i) {
+        return res
+      }
+
       var node = cloneVnode(s)
       var props = getProps(node)
       props.type = 'foot'
       props.row = row
-      return node
-    }))
+      props.table = table
+
+      res.push(node)
+      return res
+    }, []))
   ])
 }
 

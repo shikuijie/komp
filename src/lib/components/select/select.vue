@@ -114,23 +114,23 @@ export default {
         return this.value === option[this.fval]
       }
     },
-    mselect (option) {
+    mselect (option, active) {
       var children = option[this.fsub]
       if (!children) {
         let idx = this.value.indexOf(option[this.fval])
-        if (idx === -1) {
-          this.value.push(option[this.fval])
-        } else {
+        if (active && idx !== -1) {
           this.value.splice(idx, 1)
+        } else if (!active && idx === -1) {
+          this.value.push(option[this.fval])
         }
       } else {
-        children.forEach(this.mselect)
+        children.forEach(child => this.mselect(child, active))
       }
     },
-    select (option) {
+    select (option, active) {
+      var nval = this.value
       if (this.multiple) {
-        this.mselect(option)
-        this.$emit('change', this.value)
+        this.mselect(option, active)
       } else {
         let val = option[this.fval]
         if (this.cascaded) {
@@ -141,23 +141,28 @@ export default {
             vals.unshift(data.option[this.fval])
           }
           this.value.splice(0, this.value.length, ...vals)
-          this.$emit('change', this.value)
         } else {
+          nval = val
           this.$emit('input', val)
-          this.$emit('change', val)
         }
         this.bus.$emit('dropdown.hide')
       }
+
+      this.$emit('change', nval)
+      this.controlBus && this.controlBus.$emit('control.check', nval)
     },
     clear (val) {
+      var nval = this.value
       if (this.multiple && val) {
         this.value.splice(this.value.indexOf(val), 1)
       } else if (this.multiple || this.cascaded) {
         this.value.splice(0, this.value.length)
       } else {
+        nval = null
         this.$emit('input', null)
       }
-      this.$emit('change', this.value)
+      this.$emit('change', nval)
+      this.controlBus && this.controlBus.$emit('control.check', nval)
     },
     onEdit ($event) {
       this.text = $event.target.value
@@ -351,6 +356,7 @@ export default {
   created () {
     // define an async event to fetch next level of options
     this.mHasFetchEvent = hasListener(this.$vnode, 'fetch')
+    this.controlBus && this.controlBus.$on('control.getvalue', () => this.value)
 
     if (!this.sublist) {
       throw new Error(`Select options must have an Array field: ${this.fsub}`)
@@ -377,6 +383,7 @@ export default {
   destroyed () {
     this.bus.$off('option.select')
     this.bus.$off('option.hover')
+    this.controlBus && this.controlBus.$off('control.getvalue')
   }
 }
 </script>
@@ -428,13 +435,11 @@ export default {
 
     i.km-option-caret {
       position: absolute;
-      width: 10px;
-      height: 10px;
+      border: 5px solid transparent;
+      border-right-color: @border-slight;;
+      margin-top: -5px;
       top: 50%;
       right: 0;
-      border: 1px solid @border-light;
-      transform: translate(6px, -5px) rotateZ(45deg);
-      background: white;
     }
   }
 
@@ -446,9 +451,7 @@ export default {
 
     .km-option-list {
       display: table-cell;
-      &:not(:last-child) .km-option {
-        border-right: 1px solid @border-light;
-      }
+      border-right: 1px solid @border-slight;
     }
   }
 }

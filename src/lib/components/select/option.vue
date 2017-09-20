@@ -31,7 +31,7 @@ export default {
   },
   methods: {
     select () {
-      this.bus.$emit('option.select', this.option)
+      this.bus.$emit('option.select', this.option, this.active)
     },
     moveIn () {
       this.mTimeHandler = window.setTimeout(() => {

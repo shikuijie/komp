@@ -7,7 +7,7 @@ export function isServer () {
 }
 
 // 类型判别
-export const Type = ['Number', 'String', 'Object', 'Date'].reduce((res, t) => {
+export const Type = ['Number', 'String', 'Object', 'Date', 'Function'].reduce((res, t) => {
   res[`is${t}`] = function (data) {
     return Object.prototype.toString.apply(data) === `[object ${t}]`
   }

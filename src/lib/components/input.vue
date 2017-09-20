@@ -13,7 +13,6 @@ export default {
   props: {
     controlBus: Bus,
     value: String | Number,
-    number: Boolean,
     disabled: Boolean,
     placeholder: String
   },
@@ -38,10 +37,7 @@ export default {
     onBlur () {
       this.active = false
       this.text = this.text ? this.text.trim() : null
-      if (this.number) {
-        let n = +this.text
-        this.text = (!n && n !== 0) ? this.text : n
-      }
+
       this.$emit('input', this.text)
       this.$emit('change', this.text)
       this.controlBus && this.controlBus.$emit('control.check', this.text)

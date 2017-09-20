@@ -2,8 +2,8 @@
 import kmTable from './table.vue'
 import Scroll from 'komp/scroll.vue'
 import Bus from 'lib/bus'
-import {getWrappers} from './util'
-import {cloneVnode} from 'lib/vnode'
+import {getWrappers, getMRow} from './util'
+import {cloneVnode, getProps} from 'lib/vnode'
 
 export default {
   components: {
@@ -17,7 +17,8 @@ export default {
       validator (val) {
         return ['first', 'last', 'both'].indexOf(val) !== -1
       }
-    }
+    },
+    rowspan: Boolean
   },
   data () {
     return {
@@ -38,6 +39,8 @@ export default {
   },
   render (h) {
     var wrappers = getWrappers(this.$slots.default)
+    var columns = wrappers ? wrappers[wrappers.length - 1].map(wrapper => wrapper.node) : []
+    var bodyKeys = this.rowspan ? columns.map(s => getProps(s).body) : null
 
     return h('div', {
       staticClass: 'km-colfix-table'
@@ -51,7 +54,10 @@ export default {
           staticClass: 'km-table-middle',
           props: {
             table: this.table,
-            wrappers: wrappers
+            rowspan: this.rowspan,
+            wrappers,
+            columns,
+            bodyKeys
           }
         })
       ]),
@@ -59,26 +65,22 @@ export default {
         staticClass: 'km-table-first',
         props: {
           table: this.table,
-          wrappers: wrappers.map(row => {
-            var item = row[0]
-            return [{
-              render: item.render,
-              node: cloneVnode(item.node)
-            }]
-          })
+          rowspan: this.rowspan,
+          wrappers,
+          columns,
+          bodyKeys,
+          col: 0
         }
       }) : '',
       this.fixLastCol ? h(kmTable, {
         staticClass: 'km-table-last',
         props: {
           table: this.table,
-          wrappers: wrappers.map(row => {
-            var item = row[row.length - 1]
-            return [{
-              render: item.render,
-              node: cloneVnode(item.node)
-            }]
-          })
+          rowspan: this.rowspan,
+          wrappers,
+          columns,
+          bodyKeys,
+          col: columns.length - 1
         }
       }) : ''
     ])

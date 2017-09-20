@@ -97,16 +97,17 @@ export default {
       }
     },
     numberCheck (val) {
+      var re = /^\s*\d+\s*$/
       var msg = this.number === true ? '请输入数字' : this.number
-      return (!val || Type.isNumber(val)) ? null : msg
+      return (!val || re.test(val)) ? null : msg
     },
     minCheck (val) {
       var [min, msg] = Array.isArray(this.min) ? this.min : [this.min, '输入过小']
-      return ((!val && val !== 0) || min <= val) ? null : msg
+      return min <= +val ? null : msg
     },
     maxCheck (val) {
       var [max, msg] = Array.isArray(this.max) ? this.max : [this.max, '输入过大']
-      return ((!val && val !== 0) || max >= val) ? null : msg
+      return max >= val ? null : msg
     },
     maxlengthCheck (val) {
       val += ''
@@ -169,7 +170,10 @@ export default {
   &.km-inline {
     display: inline-block;
   }
-  &.km_error .km-input {
+  &.km_error .km_input {
+    border-color: @error;
+  }
+  &.km_error .km-dropdown-frame {
     border-color: @error;
   }
 

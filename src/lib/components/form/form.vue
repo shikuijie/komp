@@ -19,23 +19,14 @@ export default {
       var checkers = this.bus.$emit('form.inner.check')
       return Promise.all(Array.isArray(checkers) ? checkers : [checkers]).then(errors => {
         errors = errors.filter(_ => _.error)
-        if (errors.length) {
-          this.mHasInvalidEvent && this.$emit('invalid', errors)
-          return false
-        } else {
-          return true
-        }
+        return errors.length ? errors : null
       })
     })
 
     this.bus.$on('form.submit', () => {
       return new Promise(resolve => {
-        this.bus.$emit('form.check').then(valid => {
-          if (valid) {
-            this.$emit('submit', resolve)
-          } else {
-            resolve()
-          }
+        this.bus.$emit('form.check').then(errors => {
+          this.$emit('submit', {resolve, errors})
         })
       })
     })

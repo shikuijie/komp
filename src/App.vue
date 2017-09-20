@@ -5,13 +5,9 @@
   <div id="app">
     <km-form class="km-inline" :bus="person.bus" @submit="onSubmitPersonInfo" @invalid="onPersonInvalid">
       <km-form-control style="width:300px" name="edu">
-        <!-- <km-select :clearable="true" :multiple="false" placeholder="占位字符串" v-model="person.info.edu">
-          <km-optgrp :label="grp.label" v-for="grp in person.info.groups" :key="grp.label"> 
-            <km-option :label="opt.label" :value="opt.value" v-for="opt in grp.options" :key="opt.label"></km-option>
-          </km-optgrp>
-        </km-select> -->
+        <km-select :option="person.info" :multiple="false" placeholder="占位字符串" v-model="person.info.edu"></km-select>
       </km-form-control>
-      <km-form-control style="width:200px" name="age" :required="true" :number="true" @check="onCheckPersonAge">
+      <km-form-control style="width:200px" name="age" :min="10" :max="20" :required="true" :number="true" @check="onCheckPersonAge">
         <km-input v-model="person.info.age"></km-input>
       </km-form-control>
       <km-form-control style="width:200px" name="birthday" @check="onCheckPersonBirthday">
@@ -31,17 +27,20 @@
       </template>
     </km-tip-ship>
 
-    <km-colfix-table :table="table" fixed="both" class="km-bordered">
-      <km-tcell head="姓名" body="person.name"></km-tcell>
-      <km-tcell head="联系方式" body="person.contact"></km-tcell>
-      <km-tcell head="年龄" body="person.age"></km-tcell>
-      <km-tcell head="职业" body="person.job"></km-tcell>
-      <km-tcell head="联系方式" body="person.contact"></km-tcell>
-      <km-tcell head="年龄" body="person.age"></km-tcell>
-      <km-tcell head="职业" body="person.job"></km-tcell>
-      <km-tcell head="联系方式" body="person.contact"></km-tcell>
-      <km-tcell head="年龄" body="person.age"></km-tcell>
-      <km-tcell head="职业" body="person.job"></km-tcell>
+    <km-colfix-table :table="table" fixed="both" class="km-bordered" :rowspan="true">
+      <km-tcell head="年龄" body="person.age" :foot="ave"></km-tcell>
+      <km-tcell head="姓名">
+        <km-tcell head="姓" body="person.fname" :foot="join"></km-tcell>
+        <km-tcell head="名" body="person.lname" :foot="join"></km-tcell>
+      </km-tcell>
+      <km-tcell head="联系方式" body="person.contact[]" foot="联系方式"></km-tcell>
+      <km-tcell head="职业" body="person.job" foot="职业"></km-tcell>
+      <km-tcell head="期望">
+        <km-tcell head="期望工作" body="person.expectJob" foot="期望工作"></km-tcell>
+        <km-tcell head="期望月薪" body="person.expectSalary" foot="期望月薪"></km-tcell>
+        <km-tcell head="期望城市" body="person.expectCity" foot="期望城市"></km-tcell>
+      </km-tcell>
+      <km-tcell head="地址" body="person.address" foot="地址"></km-tcell>
     </km-colfix-table>
 
     <km-modal-anchor :bus="modal.bus" :edata="{name: 'Shimoo'}">弹窗</km-modal-anchor>
@@ -59,7 +58,7 @@
 
     <km-select v-model="cascade.value" style="width: 300px"
       @fetch="onAsyncFetch" @change="onChangeSelect"
-      :option="cascade.option" :cascaded="false" :editable="false" :multiple="false">
+      :option="cascade.option" :cascaded="false" :editable="false" :multiple="true">
     </km-select>
   </div>
 </template>
@@ -78,9 +77,9 @@ export default {
           edu: [],
           age: null,
           birthday: null,
-          groups: [{
+          children: [{
             label: 'group1',
-            options: [{
+            children: [{
               label: 'label1',
               value: {name: 'value1'}
             }, {
@@ -89,7 +88,7 @@ export default {
             }]
           }, {
             label: 'group2',
-            options: [{
+            children: [{
               label: 'label3',
               value: {name: 'value3'}
             }, {
@@ -109,19 +108,30 @@ export default {
         showAge: true,
         tbody: [{
           person: {
-            name: 'shikuijie',
+            fname: '诗',
+            lname: '水',
             age: 32,
             job: 'Web Programmer',
-            contact: '15641877656'
+            contact: ['15641877656', 'shikuijie@gmail.com'],
+            address: '北京海淀区中关村',
+            expectJob: '前端开发',
+            expectSalary: '25k',
+            expectCity: '北京'
           }
         }, {
           person: {
-            name: 'lagou',
-            age: 4,
+            fname: '石',
+            lname: '木',
+            age: 33,
             job: 'Internet Job',
-            contact: 'skj9798@163.com'
+            contact: ['skj9798@163.com', '17710547517'],
+            address: '北京朝阳区呼家楼',
+            expectJob: '前端开发',
+            expectSalary: '25k',
+            expectCity: '北京'
           }
-        }]
+        }],
+        tfoot: {}
       },
       modal: {
         bus: new Bus()
@@ -138,6 +148,14 @@ export default {
     }
   },
   methods: {
+    ave (colItems, tfoot) {
+      return colItems.reduce((res, i) => {
+        return res + i
+      })/colItems.length
+    },
+    join (colItems, tfoot) {
+      return colItems.join('/')
+    },
     onChangeSelect (val) {
       console.log(val)
     },
@@ -153,10 +171,14 @@ export default {
     onCheckPersonBirthday ({value, resolve}) {
       window.setTimeout(() => {
         console.log('check birthday')
-        resolve()
+        resolve('birthday fail')
       }, 500)
     },
-    onSubmitPersonInfo (resolve) {
+    onSubmitPersonInfo ({resolve, errors}) {
+      if (errors.length) {
+        resolve()
+        return console.log(errors)
+      }
       console.log('start submit person info')
       window.setTimeout(() => {
         console.log('submit person info stop')
@@ -205,6 +227,10 @@ export default {
             label: '级联2', value: 'cascade2'
           }, {
             label: '级联3', value: 'cascade3'
+          }, {
+            label: '级联4', value: 'cascade4'
+          }, {
+            label: '级联5', value: 'cascade5'
           }]
         }
 
@@ -215,6 +241,12 @@ export default {
             label: '级联1-2', value: 'cascade1-2', children: []
           }, {
             label: '级联1-3', value: 'cascade1-3'
+          }, {
+            label: '级联1-4', value: 'cascade1-4'
+          }, {
+            label: '级联1-5', value: 'cascade1-5'
+          }, {
+            label: '级联1-6', value: 'cascade1-6'
           }]
         }
 
@@ -247,9 +279,9 @@ export default {
 <style lang="less">
 .km-select {
   .km-option-list {
-    min-width: 120px;
+    width: 120px;
     .km-scroll {
-      max-height: 160px;
+      max-height: 140px;
     }
   }
 }
@@ -260,14 +292,14 @@ export default {
     padding-left: 1em;
   }
 
-  thead {
+  thead, tfoot {
     tr {
-      height: 60px;
+      height: 30px;
     }
   }
   tbody {
     tr {
-      height: 80px;
+      height: 40px;
     }
   }
 }
